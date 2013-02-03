@@ -4,7 +4,7 @@
   <title><![CDATA[步科]]></title>
   <link href="http://buke.github.com/atom.xml" rel="self"/>
   <link href="http://buke.github.com/"/>
-  <updated>2013-02-03T20:39:59+08:00</updated>
+  <updated>2013-02-03T21:14:14+08:00</updated>
   <id>http://buke.github.com/</id>
   <author>
     <name><![CDATA[wangbuke@gmail.com]]></name>
@@ -12,18 +12,5 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
-  
-  <entry>
-    <title type="html"><![CDATA[测试]]></title>
-    <link href="http://buke.github.com/blog/2013/02/03/test/"/>
-    <updated>2013-02-03T20:18:00+08:00</updated>
-    <id>http://buke.github.com/blog/2013/02/03/test</id>
-    <content type="html"><![CDATA[<p>第一偏测试莫</p>
-
-<p>asdfa</p>
-
-<p>阿三大法岁大法啊</p>
-]]></content>
-  </entry>
   
 </feed>

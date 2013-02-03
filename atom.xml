@@ -1,16 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[My Octopress Blog]]></title>
+  <title><![CDATA[步科]]></title>
   <link href="http://buke.github.com/atom.xml" rel="self"/>
   <link href="http://buke.github.com/"/>
-  <updated>2013-02-03T20:04:00+08:00</updated>
+  <updated>2013-02-03T20:19:28+08:00</updated>
   <id>http://buke.github.com/</id>
   <author>
-    <name><![CDATA[Your Name]]></name>
+    <name><![CDATA[wangbuke@gmail.com]]></name>
     
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[test]]></title>
+    <link href="http://buke.github.com/blog/2013/02/03/test/"/>
+    <updated>2013-02-03T20:18:00+08:00</updated>
+    <id>http://buke.github.com/blog/2013/02/03/test</id>
+    <content type="html"><![CDATA[
+]]></content>
+  </entry>
   
 </feed>

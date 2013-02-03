@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[步科]]></title>
-  <link href="http://buke.github.com/atom.xml" rel="self"/>
+  <title><![CDATA[Category: Tryton | 步科]]></title>
+  <link href="http://buke.github.com/blog/categories/tryton/atom.xml" rel="self"/>
   <link href="http://buke.github.com/"/>
   <updated>2013-02-03T23:15:14+08:00</updated>
   <id>http://buke.github.com/</id>
@@ -26,37 +26,13 @@
 
 <p>1、Tryton</p>
 
-<p><img src="http://buke.github.com/images/my/tirton.jpg"></p>
+<p><img src="/images/my/tirton.jpg"></p>
 
 <p>简介：gtk 客户端</p>
 
 <p>名字来源：Triton ，希腊神话中海之信使，海王波塞冬和海后安菲特里忒的儿子。和他老爸一样，他也带着三叉戟，此外他还带着一个海螺号角，传说大海中可怕的声音就是这个号角发出。</p>
 
 <p>同时也是海卫一的名字。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[linux 下使用 Supervisor 管理源码启动的 OpenERP]]></title>
-    <link href="http://buke.github.com/blog/2012/07/16/user-supervisor-manager-openerp/"/>
-    <updated>2012-07-16T22:50:00+08:00</updated>
-    <id>http://buke.github.com/blog/2012/07/16/user-supervisor-manager-openerp</id>
-    <content type="html"><![CDATA[<p>从源码启动openerp，简单的做法是添加启动脚本到/etc/init.d/rc.local等，让openerp 随系统启动而运行。此类方法只在系统启动时运行，但万一程序在运行中崩溃，您可能要等到用户发现不能使用了，才去重启服务器。下面请出今天的主角： supervisor   ( http://supervisord.org/)</p>
-
-<p>Supervisor 是什么？</p>
-
-<p>Supervisor is a client/server system that allows its users to monitor and control a number of processes on UNIX-like operating systems.
-Supervisor 是一个客户端/服务器系统，允许用户监控和控制类 Unix 操作系统上的进程数。</p>
-
-<h1>1、安装</h1>
-
-<p>debian/ubuntu</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>apt-get install supervisor</span></code></pre></td></tr></table></div></figure>
-
-
-<h1>2、</h1>
 ]]></content>
   </entry>
   

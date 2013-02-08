@@ -80,7 +80,7 @@
 <p>Supervisor is a client/server system that allows its users to monitor and control a number of processes on UNIX-like operating systems.
 Supervisor 是一个客户端/服务器系统，允许用户监控和控制类 Unix 操作系统上的进程数。</p>
 
-<h1>1、安装</h1>
+<h2>1、安装</h2>
 
 <p>debian/ubuntu</p>
 
@@ -88,7 +88,87 @@ Supervisor 是一个客户端/服务器系统，允许用户监控和控制类 U
 </pre></td><td class='code'><pre><code class=''><span class='line'>apt-get install supervisor</span></code></pre></td></tr></table></div></figure>
 
 
-<h1>2、</h1>
+<p>redhat/centos</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>yum install supervisor</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>2、建立openerp 的配置文件</h2>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'># touch /etc/supervisor/conf.d/openerp.conf
+</span><span class='line'># vi /etc/supervisor/conf.d/openerp.conf</span></code></pre></td></tr></table></div></figure>
+
+
+<p>openerp.conf 内容</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>[program:openerp]
+</span><span class='line'>; openerp 启动脚本
+</span><span class='line'>command=python /var/www/openerp-6.1-1/openerp-server -c /var/www/openerp-6.1-1/openerp-server.conf
+</span><span class='line'>; openerp 目录
+</span><span class='line'>directory=/var/www/openerp-6.1-1/
+</span><span class='line'>; 是否随系统启动
+</span><span class='line'>autostart=true
+</span><span class='line'>; 自动重启
+</span><span class='line'>autorestart=true
+</span><span class='line'>; 启动时间，如果超过这个时间oe还没有挂，则视为已经启动
+</span><span class='line'>startsecs=3
+</span><span class='line'>; 启动用户
+</span><span class='line'>user=www-data
+</span><span class='line'>redirect_stderr=true
+</span><span class='line'>; log 文件
+</span><span class='line'>stdout_logfile=/var/www/openerp-6.1-1/openerp-server.log
+</span><span class='line'>stdout_logfile_maxbytes=500MB
+</span><span class='line'>stdout_logfile_backups=50
+</span><span class='line'>stdout_capture_maxbytes=1MB
+</span><span class='line'>stdout_events_enabled=false
+</span><span class='line'>loglevel=warn</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>3、 完成！</h2>
+
+<p>重启系统试试看openerp 是否已经启动。也可以想办法把openerp 搞崩溃，试试supervisor 能不能及时将openerp 重启</p>
+
+<h2>4、 常用命令</h2>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'># supervisorctl 
+</span><span class='line'>openerp                          RUNNING    pid 9454, uptime 4:43:34
+</span><span class='line'>supervisor> start openerp  #启动
+</span><span class='line'>supervisor> stop openerp   #停止
+</span><span class='line'>supervisor> restart openerp #重启
+</span><span class='line'>supervisor> status openerp #查看状态</span></code></pre></td></tr></table></div></figure>
+
+
+
 </div>
 
 

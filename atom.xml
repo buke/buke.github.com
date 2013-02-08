@@ -4,7 +4,7 @@
   <title><![CDATA[步科]]></title>
   <link href="http://buke.github.com/atom.xml" rel="self"/>
   <link href="http://buke.github.com/"/>
-  <updated>2013-02-03T23:15:14+08:00</updated>
+  <updated>2013-02-08T16:01:13+08:00</updated>
   <id>http://buke.github.com/</id>
   <author>
     <name><![CDATA[wangbuke@gmail.com]]></name>
@@ -33,6 +33,270 @@
 <p>名字来源：Triton ，希腊神话中海之信使，海王波塞冬和海后安菲特里忒的儿子。和他老爸一样，他也带着三叉戟，此外他还带着一个海螺号角，传说大海中可怕的声音就是这个号角发出。</p>
 
 <p>同时也是海卫一的名字。</p>
+
+<p>2、Trytond</p>
+
+<p>简介：Tryton 后台守护进程，Trytond 是 Tryton daemon 的缩写。</p>
+
+<p>3、trytond_xxx-2.6.0</p>
+
+<p>简介：trytond 模块，XXX 是模块名字，2.6.0 是版本号</p>
+
+<p>4、Neso</p>
+
+<p>简介：tryton 可独立运行的客户端+服务端。windows 下使用sqlite 数据库，在单用户情况下使用。</p>
+
+<p>名字来源：海洋仙女涅瑞伊得斯Nereides之一，仙女涅索Neso一名意为【住在岛上】，源自古希腊语的nesos‘岛屿’。如印度尼西亚Indonesia则意为【印度群岛】。</p>
+
+<p>同时也是海卫十三的名字。</p>
+
+<p>5、Proteus</p>
+
+<p>简介：tryton 客户端API库，可以像类库一样读取 tryton server。</p>
+
+<p>名字来源：Proteus 海神波塞冬之子，他负责放牧Poseidon的一群海豹。相比而言，Proteus是海神中最善于变幻的一位，他曾经被从特洛伊战场返航的Menelaus紧紧抓住，为了摆脱这个人，Proteus变成了狮子、虎豹、野猪、流水、熊熊烈火和风等。</p>
+
+<p>同时也是海卫八的名字。</p>
+
+<p>6、SAO</p>
+
+<p>简介：tryton web 客户端（尚在开发中 http://hg.tryton.org/sandbox/sao）。</p>
+
+<p>名字来源：海洋仙女涅瑞伊得斯Nereides之一，仙女 Sao 被认为是拯救水手，保障水手安全的海中仙女。
+同时也是海卫十一的名字。</p>
+
+<p>7、Nereid</p>
+
+<p>简介：整合Flask 的web 框架，使用tryton 为后台。由 openlabs.co.in 开发。</p>
+
+<p>名字来源：海洋仙女涅瑞伊德Nereides，Nereid为其单数，Nereides为海神涅柔斯Nereus与大洋神女多里斯Doris的五十个女儿。
+同时也是海卫二的名字。</p>
+
+<p><img src="http://buke.github.com/images/my/nereides.jpg"></p>
+
+<p> 下一个是谁？</p>
+
+<p>海王星 Neptunus （Neptunus 是罗马神话中 波塞冬 的名字） 海王星有13颗已知的天然卫星</p>
+
+<p>海卫一 <strong> Triton </strong></p>
+
+<p>海卫二 <strong> Nereid </strong></p>
+
+<p>海卫三 Naiad</p>
+
+<p>海卫四 Thalassa</p>
+
+<p>海卫五 Despina</p>
+
+<p>海卫六 Galatea</p>
+
+<p>海卫七 Larissa</p>
+
+<p>海卫八 <strong> Proteus </strong></p>
+
+<p>海卫九 Halimede</p>
+
+<p>海卫十 Psamathe</p>
+
+<p>海卫十一 <strong> Sao </strong></p>
+
+<p>海卫十二 Laomedeia</p>
+
+<p>海卫十三 <strong> Neso </strong></p>
+
+<p>目前为止，Tryton 的相关软件都以海王星的卫星命名，猜猜看下一个是那个？</p>
+
+<p>参考资料：
+海王星的卫星 http://zh.wikipedia.org/wiki/%E6%B5%B7%E7%8E%8B%E6%98%9F%E7%9A%84%E5%8D%AB%E6%98%9F</p>
+
+<p>果壳 稻草人语</p>
+
+<p>http://www.guokr.com/blog/431784/</p>
+
+<p>http://www.guokr.com/blog/380892/</p>
+
+<p>http://www.guokr.com/blog/101070/</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[使用Nginx Upstream 部署 OpenERP]]></title>
+    <link href="http://buke.github.com/blog/2012/07/17/use-nginx-upstream-deploy-openerp/"/>
+    <updated>2012-07-17T15:51:00+08:00</updated>
+    <id>http://buke.github.com/blog/2012/07/17/use-nginx-upstream-deploy-openerp</id>
+    <content type="html"><![CDATA[<p>Openerp 6.1 使用werkzeug 作为web服务的框架，性能比之前的cherrypy 有了很大的改善。但无论是 werkzeug 还是cherrypy ，都不是专门的web服务器。通常的做法是在openerp 之前加一个 Nginx、Apache或其他服务器。下面介绍使用Nginx Upstream 部署openerp 的方法。</p>
+
+<h1>一 前提</h1>
+
+<p>此处假设您已经安装好 openerp ，并运行在 127.0.0.1:8069</p>
+
+<h1>二 安装Nginx</h1>
+
+<p>debian/ubuntu:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'># apt-get install nginx</span></code></pre></td></tr></table></div></figure>
+
+
+<p>redhat/centos:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'># yum install nginx</span></code></pre></td></tr></table></div></figure>
+
+
+<h1>三 配置Nginx</h1>
+
+<h2>1. 修改/etc/nginx/nginx.conf ，开启gzip 压缩</h2>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'># vi /etc/nginx/nginx.conf
+</span><span class='line'>
+</span><span class='line'>--------------nginx.conf 需修改内容节选--------------------------
+</span><span class='line'>        gzip on;
+</span><span class='line'>        gzip_disable "msie6";
+</span><span class='line'>
+</span><span class='line'>        gzip_vary on;
+</span><span class='line'>        gzip_proxied any;
+</span><span class='line'>        gzip_comp_level 6;
+</span><span class='line'>        gzip_buffers 16 8k;
+</span><span class='line'>        gzip_http_version 1.1;
+</span><span class='line'>        #添加一个类型 application/javascript
+</span><span class='line'>        gzip_types text/plain text/css application/javascript application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript;</span></code></pre></td></tr></table></div></figure>
+
+
+<p>吐槽一下，是否开启gzip，差别真不小。oe 首页加载的http://127.0.0.1/web/webclient/js 开启前文件大小是 1.4M , 开启后大小是350.6 KB （通过firebug 查看）。</p>
+
+<h2>2. 建立 openerp 配置文件</h2>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'># touch /etc/nginx/sites-enabled/openerp
+</span><span class='line'># vi /etc/nginx/sites-enabled/openerp
+</span><span class='line'>
+</span><span class='line'>--------------------openerp 文件内容---------------------------
+</span><span class='line'>
+</span><span class='line'>proxy_temp_path /tmp/nginx_proxy_temp;
+</span><span class='line'>proxy_cache_path  /tmp/nginx_proxy_cache levels=1:2  keys_zone=oecache:100m inactive=3d max_size=1000m;
+</span><span class='line'>
+</span><span class='line'>proxy_buffer_size     32k;              #设置代理服务器（nginx）保存用户头信息的缓冲区大小
+</span><span class='line'>proxy_buffers         4 32k;            #proxy_buffers缓冲区，网页平均在32k以下的话，这样设置
+</span><span class='line'>proxy_busy_buffers_size  64k;           #高负荷下缓冲大小（proxy_buffers*2）
+</span><span class='line'>proxy_temp_file_write_size  64k;       #设定缓存文件夹大小，大于这个值，将从upstream服务器传
+</span><span class='line'>
+</span><span class='line'>proxy_connect_timeout      60;
+</span><span class='line'>proxy_send_timeout         60;
+</span><span class='line'>proxy_read_timeout         3000;
+</span><span class='line'>
+</span><span class='line'>upstream oeserver{
+</span><span class='line'>        server 127.0.0.1:8069;
+</span><span class='line'>}
+</span><span class='line'>
+</span><span class='line'>server {
+</span><span class='line'>
+</span><span class='line'>        server_name  www.example.com;
+</span><span class='line'>
+</span><span class='line'>        root /var/www/openerp-6.1-1/openerp/addons;
+</span><span class='line'>
+</span><span class='line'>        location /{
+</span><span class='line'>
+</span><span class='line'>                proxy_cache              oecache;
+</span><span class='line'>                #proxy_cache_key "$host$request_uri$request_body";
+</span><span class='line'>                proxy_cache_key $host$request_uri$request_body;
+</span><span class='line'>                proxy_cache_valid  200 304 1d;
+</span><span class='line'>                proxy_cache_valid  any   1d;
+</span><span class='line'>
+</span><span class='line'>                proxy_next_upstream http_502 http_504 error timeout invalid_header;
+</span><span class='line'>                proxy_pass_header Set-Cookie;
+</span><span class='line'>                proxy_set_header   Host             $host;
+</span><span class='line'>                proxy_set_header   X-Real-IP        $remote_addr;
+</span><span class='line'>                proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
+</span><span class='line'>                proxy_redirect  off;
+</span><span class='line'>
+</span><span class='line'>                proxy_pass http://oeserver;
+</span><span class='line'>
+</span><span class='line'>                proxy_buffering on;
+</span><span class='line'>                proxy_cache_valid       1d;
+</span><span class='line'>                expires 1d;
+</span><span class='line'>        }
+</span><span class='line'>
+</span><span class='line'>        location ~* \.(js|css|png|jpg|jpeg|gif|ico)$ {
+</span><span class='line'>                proxy_buffering on;
+</span><span class='line'>                proxy_cache_valid       1d;
+</span><span class='line'>                expires 1d;
+</span><span class='line'>        }
+</span><span class='line'>
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<h1>完成 ！</h1>
+
+<p>Nginx 此处仅仅是作为 openerp 的前端WEB服务器，Nginx 还有更大的作用是可以实现Openerp 的负载平衡。此处按下不表，呵呵</p>
 ]]></content>
   </entry>
   
@@ -48,7 +312,7 @@
 <p>Supervisor is a client/server system that allows its users to monitor and control a number of processes on UNIX-like operating systems.
 Supervisor 是一个客户端/服务器系统，允许用户监控和控制类 Unix 操作系统上的进程数。</p>
 
-<h1>1、安装</h1>
+<h2>1、安装</h2>
 
 <p>debian/ubuntu</p>
 
@@ -56,7 +320,87 @@ Supervisor 是一个客户端/服务器系统，允许用户监控和控制类 U
 </pre></td><td class='code'><pre><code class=''><span class='line'>apt-get install supervisor</span></code></pre></td></tr></table></div></figure>
 
 
-<h1>2、</h1>
+<p>redhat/centos</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>yum install supervisor</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>2、建立openerp 的配置文件</h2>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'># touch /etc/supervisor/conf.d/openerp.conf
+</span><span class='line'># vi /etc/supervisor/conf.d/openerp.conf</span></code></pre></td></tr></table></div></figure>
+
+
+<p>openerp.conf 内容</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>[program:openerp]
+</span><span class='line'>; openerp 启动脚本
+</span><span class='line'>command=python /var/www/openerp-6.1-1/openerp-server -c /var/www/openerp-6.1-1/openerp-server.conf
+</span><span class='line'>; openerp 目录
+</span><span class='line'>directory=/var/www/openerp-6.1-1/
+</span><span class='line'>; 是否随系统启动
+</span><span class='line'>autostart=true
+</span><span class='line'>; 自动重启
+</span><span class='line'>autorestart=true
+</span><span class='line'>; 启动时间，如果超过这个时间oe还没有挂，则视为已经启动
+</span><span class='line'>startsecs=3
+</span><span class='line'>; 启动用户
+</span><span class='line'>user=www-data
+</span><span class='line'>redirect_stderr=true
+</span><span class='line'>; log 文件
+</span><span class='line'>stdout_logfile=/var/www/openerp-6.1-1/openerp-server.log
+</span><span class='line'>stdout_logfile_maxbytes=500MB
+</span><span class='line'>stdout_logfile_backups=50
+</span><span class='line'>stdout_capture_maxbytes=1MB
+</span><span class='line'>stdout_events_enabled=false
+</span><span class='line'>loglevel=warn</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>3、 完成！</h2>
+
+<p>重启系统试试看openerp 是否已经启动。也可以想办法把openerp 搞崩溃，试试supervisor 能不能及时将openerp 重启</p>
+
+<h2>4、 常用命令</h2>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'># supervisorctl 
+</span><span class='line'>openerp                          RUNNING    pid 9454, uptime 4:43:34
+</span><span class='line'>supervisor> start openerp  #启动
+</span><span class='line'>supervisor> stop openerp   #停止
+</span><span class='line'>supervisor> restart openerp #重启
+</span><span class='line'>supervisor> status openerp #查看状态</span></code></pre></td></tr></table></div></figure>
+
+
+
 ]]></content>
   </entry>
   

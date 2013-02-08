@@ -4,7 +4,7 @@
   <title><![CDATA[Category: OpenERP | 步科]]></title>
   <link href="http://buke.github.com/blog/categories/openerp/atom.xml" rel="self"/>
   <link href="http://buke.github.com/"/>
-  <updated>2013-02-03T23:15:14+08:00</updated>
+  <updated>2013-02-08T16:01:13+08:00</updated>
   <id>http://buke.github.com/</id>
   <author>
     <name><![CDATA[wangbuke@gmail.com]]></name>
@@ -12,6 +12,225 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[使用Nginx Upstream 部署 OpenERP]]></title>
+    <link href="http://buke.github.com/blog/2012/07/17/use-nginx-upstream-deploy-openerp/"/>
+    <updated>2012-07-17T15:51:00+08:00</updated>
+    <id>http://buke.github.com/blog/2012/07/17/use-nginx-upstream-deploy-openerp</id>
+    <content type="html"><![CDATA[<p>Openerp 6.1 使用werkzeug 作为web服务的框架，性能比之前的cherrypy 有了很大的改善。但无论是 werkzeug 还是cherrypy ，都不是专门的web服务器。通常的做法是在openerp 之前加一个 Nginx、Apache或其他服务器。下面介绍使用Nginx Upstream 部署openerp 的方法。</p>
+
+<h1>一 前提</h1>
+
+<p>此处假设您已经安装好 openerp ，并运行在 127.0.0.1:8069</p>
+
+<h1>二 安装Nginx</h1>
+
+<p>debian/ubuntu:</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;h1>apt-get install nginx&lt;/h1>
+</span><span class='line'>
+</span><span class='line'>&lt;p></span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>redhat/centos:</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;h1>yum install nginx&lt;/h1>
+</span><span class='line'>
+</span><span class='line'>&lt;p></span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<h1>三 配置Nginx</h1>
+
+<h2>1. 修改/etc/nginx/nginx.conf ，开启gzip 压缩</h2>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;h1>vi /etc/nginx/nginx.conf&lt;/h1>
+</span><span class='line'>
+</span><span class='line'>&lt;p>--------------nginx.conf 需修改内容节选--------------------------&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;pre>&lt;code>    gzip on;
+</span><span class='line'>    gzip_disable "msie6";
+</span><span class='line'>
+</span><span class='line'>    gzip_vary on;
+</span><span class='line'>    gzip_proxied any;
+</span><span class='line'>    gzip_comp_level 6;
+</span><span class='line'>    gzip_buffers 16 8k;
+</span><span class='line'>    gzip_http_version 1.1;
+</span><span class='line'>    #添加一个类型 application/javascript
+</span><span class='line'>    gzip_types text/plain text/css application/javascript application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript;
+</span><span class='line'>&lt;/code>&lt;/pre>
+</span><span class='line'>
+</span><span class='line'>&lt;p></span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>吐槽一下，是否开启gzip，差别真不小。oe 首页加载的http://127.0.0.1/web/webclient/js 开启前文件大小是 1.4M , 开启后大小是350.6 KB （通过firebug 查看）。</p>
+
+<h2>2. 建立 openerp 配置文件</h2>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;h1>touch /etc/nginx/sites-enabled/openerp&lt;/h1>
+</span><span class='line'>
+</span><span class='line'>&lt;h1>vi /etc/nginx/sites-enabled/openerp&lt;/h1>
+</span><span class='line'>
+</span><span class='line'>&lt;p>--------------------openerp 文件内容---------------------------&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;p>proxy_temp_path /tmp/nginx_proxy_temp;
+</span><span class='line'>proxy_cache_path  /tmp/nginx_proxy_cache levels=1:2  keys_zone=oecache:100m inactive=3d max_size=1000m;&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;p>proxy_buffer_size     32k;              #设置代理服务器（nginx）保存用户头信息的缓冲区大小
+</span><span class='line'>proxy_buffers         4 32k;            #proxy_buffers缓冲区，网页平均在32k以下的话，这样设置
+</span><span class='line'>proxy_busy_buffers_size  64k;           #高负荷下缓冲大小（proxy_buffers*2）
+</span><span class='line'>proxy_temp_file_write_size  64k;       #设定缓存文件夹大小，大于这个值，将从upstream服务器传&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;p>proxy_connect_timeout      60;
+</span><span class='line'>proxy_send_timeout         60;
+</span><span class='line'>proxy_read_timeout         3000;&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;p>upstream oeserver{&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;pre>&lt;code>    server 127.0.0.1:8069;
+</span><span class='line'>&lt;/code>&lt;/pre>
+</span><span class='line'>
+</span><span class='line'>&lt;p>}&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;p>server {&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;pre>&lt;code>    server_name  www.example.com;
+</span><span class='line'>
+</span><span class='line'>    root /var/www/openerp-6.1-1/openerp/addons;
+</span><span class='line'>
+</span><span class='line'>    location /{
+</span><span class='line'>
+</span><span class='line'>            proxy_cache              oecache;
+</span><span class='line'>            #proxy_cache_key "$host$request_uri$request_body";
+</span><span class='line'>            proxy_cache_key $host$request_uri$request_body;
+</span><span class='line'>            proxy_cache_valid  200 304 1d;
+</span><span class='line'>            proxy_cache_valid  any   1d;
+</span><span class='line'>
+</span><span class='line'>            proxy_next_upstream http_502 http_504 error timeout invalid_header;
+</span><span class='line'>            proxy_pass_header Set-Cookie;
+</span><span class='line'>            proxy_set_header   Host             $host;
+</span><span class='line'>            proxy_set_header   X-Real-IP        $remote_addr;
+</span><span class='line'>            proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
+</span><span class='line'>            proxy_redirect  off;
+</span><span class='line'>
+</span><span class='line'>            proxy_pass http://oeserver;
+</span><span class='line'>
+</span><span class='line'>            proxy_buffering on;
+</span><span class='line'>            proxy_cache_valid       1d;
+</span><span class='line'>            expires 1d;
+</span><span class='line'>    }
+</span><span class='line'>
+</span><span class='line'>    location ~* \.(js|css|png|jpg|jpeg|gif|ico)$ {
+</span><span class='line'>            proxy_buffering on;
+</span><span class='line'>            proxy_cache_valid       1d;
+</span><span class='line'>            expires 1d;
+</span><span class='line'>    }
+</span><span class='line'>&lt;/code>&lt;/pre>
+</span><span class='line'>
+</span><span class='line'>&lt;p>}</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<h1>完成 ！</h1>
+
+<p>Nginx 此处仅仅是作为 openerp 的前端WEB服务器，Nginx 还有更大的作用是可以实现Openerp 的负载平衡。此处按下不表，呵呵</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[linux 下使用 Supervisor 管理源码启动的 OpenERP]]></title>
@@ -25,13 +244,102 @@
 <p>Supervisor is a client/server system that allows its users to monitor and control a number of processes on UNIX-like operating systems.
 Supervisor 是一个客户端/服务器系统，允许用户监控和控制类 Unix 操作系统上的进程数。</p>
 
-<h1>1、安装</h1>
+<h2>1、安装</h2>
 
-<p>debian/ubuntu
-<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<p>debian/ubuntu</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class=''><span class='line'>apt-get install supervisor</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
-<h1>2、</h1>
+<p>redhat/centos
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>yum install supervisor</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<h2>2、建立openerp 的配置文件</h2>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;h1>touch /etc/supervisor/conf.d/openerp.conf&lt;/h1>
+</span><span class='line'>
+</span><span class='line'>&lt;h1>vi /etc/supervisor/conf.d/openerp.conf&lt;/h1>
+</span><span class='line'>
+</span><span class='line'>&lt;p></span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>openerp.conf 内容
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>[program:openerp]
+</span><span class='line'>; openerp 启动脚本
+</span><span class='line'>command=python /var/www/openerp-6.1-1/openerp-server -c /var/www/openerp-6.1-1/openerp-server.conf
+</span><span class='line'>; openerp 目录
+</span><span class='line'>directory=/var/www/openerp-6.1-1/
+</span><span class='line'>; 是否随系统启动
+</span><span class='line'>autostart=true
+</span><span class='line'>; 自动重启
+</span><span class='line'>autorestart=true
+</span><span class='line'>; 启动时间，如果超过这个时间oe还没有挂，则视为已经启动
+</span><span class='line'>startsecs=3
+</span><span class='line'>; 启动用户
+</span><span class='line'>user=www-data
+</span><span class='line'>redirect_stderr=true
+</span><span class='line'>; log 文件
+</span><span class='line'>stdout_logfile=/var/www/openerp-6.1-1/openerp-server.log
+</span><span class='line'>stdout_logfile_maxbytes=500MB
+</span><span class='line'>stdout_logfile_backups=50
+</span><span class='line'>stdout_capture_maxbytes=1MB
+</span><span class='line'>stdout_events_enabled=false
+</span><span class='line'>loglevel=warn</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<h2>3、 完成！</h2>
+
+<p>重启系统试试看openerp 是否已经启动。也可以想办法把openerp 搞崩溃，试试supervisor 能不能及时将openerp 重启</p>
+
+<h2>4、 常用命令</h2>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;h1>supervisorctl&lt;/h1>
+</span><span class='line'>
+</span><span class='line'>&lt;p>openerp                          RUNNING    pid 9454, uptime 4:43:34
+</span><span class='line'>supervisor> start openerp  #启动
+</span><span class='line'>supervisor> stop openerp   #停止
+</span><span class='line'>supervisor> restart openerp #重启
+</span><span class='line'>supervisor> status openerp #查看状态</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 ]]></content>
   </entry>
   

@@ -4,7 +4,7 @@
   <title><![CDATA[Category: OpenERP | 步科]]></title>
   <link href="http://buke.github.com/blog/categories/openerp/atom.xml" rel="self"/>
   <link href="http://buke.github.com/"/>
-  <updated>2013-02-08T16:27:29+08:00</updated>
+  <updated>2013-02-08T16:31:06+08:00</updated>
   <id>http://buke.github.com/</id>
   <author>
     <name><![CDATA[wangbuke@gmail.com]]></name>
@@ -14,10 +14,10 @@
 
   
   <entry>
-    <title type="html"><![CDATA[Taobao OpenERP Connector]]></title>
-    <link href="http://buke.github.com/blog/2012/07/19/taobao-openerp-connector/"/>
-    <updated>2012-07-19T16:25:00+08:00</updated>
-    <id>http://buke.github.com/blog/2012/07/19/taobao-openerp-connector</id>
+    <title type="html"><![CDATA[Taobao OpenERP Connector 简要说明]]></title>
+    <link href="http://buke.github.com/blog/2013/02/08/taobao-openerp-connector/"/>
+    <updated>2013-02-08T16:29:00+08:00</updated>
+    <id>http://buke.github.com/blog/2013/02/08/taobao-openerp-connector</id>
     <content type="html"><![CDATA[<p>Taobao OpenERP Connector</p>
 
 <p>项目托管地址：<a href="https://github.com/buke/openerp-taobao">https://github.com/buke/openerp-taobao</a></p>

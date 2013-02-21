@@ -7,9 +7,20 @@ single: true
 {% unless page.sharing == false %}
 	{% include post/sharing.html %}
 {% endunless %}
-{% if site.disqus_short_name and page.comments == true %}
+
+<!--{% if site.disqus_short_name and page.comments == true %}-->
+<!--<section id="comment">-->
+    <!--<h2 class="title">Comments</h2>-->
+    <!--<div id="disqus_thread" aria-live="polite">{% include post/disqus_thread.html %}</div>-->
+<!--</section>-->
+<!--{% endif %}-->
+
+{% if page.comments == true %}
 <section id="comment">
-    <h2 class="title">Comments</h2>
-    <div id="disqus_thread" aria-live="polite">{% include post/disqus_thread.html %}</div>
+    <h2 class="title">评论</h2>
+    <!-- UY BEGIN -->
+    <div id="uyan_frame"></div>
+    <script type="text/javascript" id="UYScript" src="http://v1.uyan.cc/js/iframe.js?UYUserId=1743843" async=""></script>
+    <!-- UY END -->
 </section>
 {% endif %}

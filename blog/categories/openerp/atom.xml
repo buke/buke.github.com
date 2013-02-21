@@ -4,7 +4,7 @@
   <title><![CDATA[Category: OpenERP | 步科]]></title>
   <link href="http://buke.github.com/blog/categories/openerp/atom.xml" rel="self"/>
   <link href="http://buke.github.com/"/>
-  <updated>2013-02-15T15:39:43+08:00</updated>
+  <updated>2013-02-21T17:36:27+08:00</updated>
   <id>http://buke.github.com/</id>
   <author>
     <name><![CDATA[wangbuke@gmail.com]]></name>
@@ -184,6 +184,306 @@
   </entry>
   
   <entry>
+    <title type="html"><![CDATA[OpenERP 负载平衡]]></title>
+    <link href="http://buke.github.com/blog/2013/01/21/openerp-load-balance/"/>
+    <updated>2013-01-21T15:11:00+08:00</updated>
+    <id>http://buke.github.com/blog/2013/01/21/openerp-load-balance</id>
+    <content type="html"><![CDATA[<p> OpenERP 7.0 带来了许多新特性，架构上也有许多改进。其中可配置 worker 参数，可使 OpenERP 运行在多进程模式，突破GIL的限制，有效利用了现代多核CPU的性能。但默认情况下，OpenERP 只能运行于一台服务器，对于提供SAAS服务或并发很大的情况下，单台服务器的性能是有限的。本文介绍实现 OpenERP 负载平衡的方法和原理。</p>
+
+<p>一、架构</p>
+
+<pre><code>┌──────────────────────────────────────────────┐
+│                   Nginx                      │
+└──────────────────────────────────────────────┘
+        /              |                \
+┌────────────┐   ┌────────────┐    ┌────────────┐
+│ OE Server  │   │ OE Server  │    │ OE Server  │
+└────────────┘   └────────────┘    └────────────┘
+         \             |                /
+┌───────────────────────────────────────────────┐
+│                Redis Server                   │
+└───────────────────────────────────────────────┘
+</code></pre>
+
+<p>注：实现负载平衡的关键点在于 cache 和 session 共享。</p>
+
+<p>二、Web 服务器配置</p>
+
+<p>WEB 服务器选择 Nginx + upstream 配置，可参考 “使用Nginx Upstream 部署 OpenERP ” http://my.oschina.net/wangbuke/blog/67450 。</p>
+
+<p>默认情况下，nginx 采用轮询的方式，将请求分发到多个 OE Server 里。建议改为 ip_hash 方式，如：</p>
+
+<pre><code>upstream bakend {
+     ip_hash;
+     server 192.168.0.11:8069;
+     server 192.168.0.12:8069;
+}
+</code></pre>
+
+<p>三、OpenERP 的 Session 和 Cache 处理</p>
+
+<p>3.1 OpenERP Web Session 处理</p>
+
+<p>OpenERP 中的Session 处理默认用FilesystemSessionStore，使用文件系统存储用户 session  。如 openerp/addons/web/http.py</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">class</span> <span class="nc">Root</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="bp">self</span><span class="o">.</span><span class="n">session_store</span> <span class="o">=</span> <span class="n">werkzeug</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">sessions</span><span class="o">.</span><span class="n">FilesystemSessionStore</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+</span><span class='line'>    <span class="bp">self</span><span class="o">.</span><span class="n">session_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>那么我们只要将OpenERP 中的SessionStore，改为 RedisSessionStore，RedisSessionStore 可参考https://gist.github.com/1451947 。</p>
+
+<p>修改方法，可以直接修改 http.py 文件。
+或是和我一样，重写一个库，重载 session_context 方法，这样可以不修改OpenERP的源文件，方便以后升级。</p>
+
+<p>3.2 OpenERP LRU Cache 处理</p>
+
+<p>openerp/tools/cache.py 中 ormcache 和 ormcache_multi 是 OpenERP 中非常重要的缓存类。OpenERP ORM 大部分的方法调用都会经过 @tools.ormcache 或 @ormcache_multi 修饰。经过修饰后，结果会被缓存，这个缓存是存放于内存中。 这个就是OE在加载一次数据后，第二次会明显快很多的原因。还有，通过web 界面翻译OE术语不能实时生效，也是因为缓存没有更新。</p>
+
+<p>可以修改ormcache 和 ormcache_multi 类，以使用 redis 缓存。关键代码如下：</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">lookup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">self2</span><span class="p">,</span> <span class="n">cr</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+</span><span class='line'>    <span class="n">key</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">skiparg</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
+</span><span class='line'>    <span class="n">key</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">:</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+</span><span class='line'>    <span class="c">#key = md5(key).hexdigest()</span>
+</span><span class='line'>    <span class="n">hash_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_key_template</span> <span class="o">%</span> <span class="n">cr</span><span class="o">.</span><span class="n">dbname</span>
+</span><span class='line'>    <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">redis</span><span class="o">.</span><span class="n">hget</span><span class="p">(</span><span class="n">hash_name</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">if</span> <span class="n">value</span><span class="p">:</span>
+</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">stat_hit</span> <span class="o">+=</span> <span class="mi">1</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">loads</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">else</span><span class="p">:</span>
+</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">stat_miss</span> <span class="o">+=</span> <span class="mi">1</span>
+</span><span class='line'>        <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="p">(</span><span class="n">self2</span><span class="p">,</span> <span class="n">cr</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
+</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">redis</span><span class="o">.</span><span class="n">hset</span><span class="p">(</span><span class="n">hash_name</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">dumps</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">HIGHEST_PROTOCOL</span><span class="p">))</span>
+</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">redis</span><span class="o">.</span><span class="n">expire</span><span class="p">(</span><span class="n">hash_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">value</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>缓存的值使用 cPickle 序列化后，将每个键值对存放于 redis 的 哈希表中。</p>
+
+<p>3.3 auth_openid 模块</p>
+
+<p>auth_openid模块也使用文件系统存储用户登录凭证。如：</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">class</span> <span class="nc">OpenIDController</span><span class="p">(</span><span class="n">openerp</span><span class="o">.</span><span class="n">addons</span><span class="o">.</span><span class="n">web</span><span class="o">.</span><span class="n">http</span><span class="o">.</span><span class="n">Controller</span><span class="p">):</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">_store</span> <span class="o">=</span> <span class="n">filestore</span><span class="o">.</span><span class="n">FileOpenIDStore</span><span class="p">(</span><span class="n">_storedir</span><span class="p">)</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+如果您启用了这个模块，那么这里也需要修改为存储在redis中。如果没有启用此模块，则无需理会。</p>
+
+<p>相关实现可参考，https://github.com/bbangert/openid-redis/blob/master/openidredis/<strong>init</strong>.py</p>
+
+<p>四、OpenERP Cron 处理</p>
+
+<p>默认情况下，每个OpenERP Server 实例都会运行一个 cron 进程任务。这里建议只允许一个实例运行CRON。把OpenERP 7.0 的配置参数 max_cron_threads 设置为0 ，即可禁止cron。相关代码如下：</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">process_spawn</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">workers_http</span><span class="p">)</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span> <span class="bp">self</span><span class="o">.</span><span class="n">population</span><span class="p">:</span>
+</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">worker_spawn</span><span class="p">(</span><span class="n">WorkerHTTP</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">workers_http</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">workers_cron</span><span class="p">)</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span> <span class="n">config</span><span class="p">[</span><span class="s">&#39;max_cron_threads&#39;</span><span class="p">]:</span>
+</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">worker_spawn</span><span class="p">(</span><span class="n">WorkerCron</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">workers_cron</span><span class="p">)</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>五、OpenERP Module RegistryManager 处理</p>
+
+<p>OpenERP Module Registry 主要负责管理OE的对象。一般是安装或更新的模块时候，会根据定义来更新数据库。 在OE多进程模式下，OE会自动管理 Module Registry ，相关的更新信息会存放在数据库里。RegistryManager  会检测是否有更新，如有更新将会自动清除缓存并重新载入。相关代码如下：</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="nd">@classmethod</span>
+</span><span class='line'><span class="k">def</span> <span class="nf">setup_multi_process_signaling</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">cr</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">if</span> <span class="ow">not</span> <span class="n">openerp</span><span class="o">.</span><span class="n">multi_process</span><span class="p">:</span>
+</span><span class='line'>        <span class="k">return</span>
+</span><span class='line'>
+</span><span class='line'><span class="nd">@classmethod</span>
+</span><span class='line'><span class="k">def</span> <span class="nf">check_registry_signaling</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">db_name</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">if</span> <span class="n">openerp</span><span class="o">.</span><span class="n">multi_process</span> <span class="ow">and</span> <span class="n">db_name</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">registries</span><span class="p">:</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>这里，实际上无需做改动,上面只是说明情况。只需让OE运行在多进程模式即可（也就是配置 worker 参数）。</p>
+
+<p>六、完成！</p>
+
+<p>经过以上几个步骤，可以让OpenERP 运行于多台服务器，通过Redis 分布式缓存处理相关的 Cache 和 Session，从而实现 OpenERP 负载平衡。</p>
+
+<p>注：
+1、本文仅讨论 OpenERP 负载平衡部署方式，并不涉及 Postgresql 和 Redis 的负载平衡，相应的方法请自行搜索。
+2、鉴于OpenERP SA 官方已不再维护 GTK 客户端，并没有对GTK客户端的情况进行完整测试。</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[OpenERP 自动编码去BOM（可用excel编辑）]]></title>
+    <link href="http://buke.github.com/blog/2012/09/05/openerp-web-import-chardet/"/>
+    <updated>2012-09-05T15:00:00+08:00</updated>
+    <id>http://buke.github.com/blog/2012/09/05/openerp-web-import-chardet</id>
+    <content type="html"><![CDATA[<p>openerp-web-import-chardet</p>
+
+<p>作者：wangbuke@gmail.com</p>
+
+<p>源码托管地址： https://github.com/buke/openerp-web-import-chardet</p>
+
+<p>OE apps 下载地址： http://apps.openerp.com/addon/8098</p>
+
+<h1>功能：</h1>
+
+<p>自动检测OpenERP 导入的CSV文件编码 自动移除UTF8文件的BOM。安装完之后，就可以直接用EXCEL WPS等编辑好的CSV文件，导入到OpenERP中。</p>
+
+<h1>支持编码：</h1>
+
+<ul>
+<li>ASCII, UTF-8</li>
+<li>Big5, GBK, GB2312, HZ-GB, HZ-GB-2312 (简体/繁体中文)</li>
+<li>EUC-JP, SHIFT_JIS, ISO-2022-JP (日文)</li>
+<li>EUC-KR, ISO-2022-KR (韩文)</li>
+<li>KOI8-R, MacCyrillic, IBM855, IBM866, ISO-8859-5, windows-1251 (斯拉夫文)</li>
+<li>ISO-8859-2, windows-1250 (匈牙利文)</li>
+<li>ISO-8859-5, windows-1251 (保加利亚文)</li>
+<li>windows-1252 (英文)</li>
+<li>ISO-8859-7, windows-1253 (希腊文)</li>
+<li>ISO-8859-8, windows-1255 (希伯来文)</li>
+<li>TIS-620 (泰文)</li>
+</ul>
+
+
+<h1>依赖模块:</h1>
+
+<p>python chardet (本模块已内含chardet-1.1。如果系统安装了新版本，则使用您安装的新版本.)</p>
+
+<p><img src="/images/my/oe-chardet.jpg"></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[OpenERP PyChart 中文报表模块（支持CJK语言）]]></title>
+    <link href="http://buke.github.com/blog/2012/08/19/openerp-pychart-unicode-report/"/>
+    <updated>2012-08-19T15:44:00+08:00</updated>
+    <id>http://buke.github.com/blog/2012/08/19/openerp-pychart-unicode-report</id>
+    <content type="html"><![CDATA[<p>OpenERP PyChart Unicode Report (Support CJK Font)</p>
+
+<p>作者：wangbuke@gmail.com</p>
+
+<p>源码托管地址：https://github.com/buke/openerp-pychart-unicode-report</p>
+
+<p>OpenERP 官方APP下载地址： http://apps.openerp.com/addon/8009</p>
+
+<p>支持pychart中文报表，如“库存预测”、“工作中心负载” 等报表。</p>
+
+<h1>模块原理</h1>
+
+<p>让pychart 生成svg 文件，然后用cairosvg 模块生成PDF报表。</p>
+
+<h1>依赖模块</h1>
+
+<p>python-cairo python-cairosvg</p>
+
+<p>Debian/Ubuntu安装方法： $ su apt-get install python-cairo python-cairosvg</p>
+
+<h1>安装与设置</h1>
+
+<h2>1、安装字体</h2>
+
+<p>复制您所用的字体文件，如simsun.ttc 到系统目录下。</p>
+
+<p>debian/ubuntu: $ sudo cp simsun.ttc /usr/share/fonts</p>
+
+<p>windows :  C:> copy simsun.ttc  c:/windows/fonts</p>
+
+<h3>2、配置pychart 报表字体 默认使用宋体</h3>
+
+<p>修改openerp 配置文件 openerp-server.conf , 添加以下参数：</p>
+
+<p>pychart_ttfont_name = Simsun</p>
+
+<p>注：默认是宋体，如使用默认值则无需修改 conf 文件</p>
+
+<p>祝你好运 ~</p>
+
+<p><img src="/images/my/oe-pychart-report.jpg"></p>
+]]></content>
+  </entry>
+  
+  <entry>
     <title type="html"><![CDATA[开源模块 Openerp Web PDF Report Preview & Print 简介]]></title>
     <link href="http://buke.github.com/blog/2012/08/02/openerp-web-pdf-report-preview-and-print/"/>
     <updated>2012-08-02T15:32:00+08:00</updated>
@@ -211,336 +511,6 @@
 <p>OpenERP 6.1</p>
 
 <p><img src="/images/my/oe-pdf-print.jpg"></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[使用Nginx Upstream 部署 OpenERP]]></title>
-    <link href="http://buke.github.com/blog/2012/07/17/use-nginx-upstream-deploy-openerp/"/>
-    <updated>2012-07-17T15:51:00+08:00</updated>
-    <id>http://buke.github.com/blog/2012/07/17/use-nginx-upstream-deploy-openerp</id>
-    <content type="html"><![CDATA[<p>Openerp 6.1 使用werkzeug 作为web服务的框架，性能比之前的cherrypy 有了很大的改善。但无论是 werkzeug 还是cherrypy ，都不是专门的web服务器。通常的做法是在openerp 之前加一个 Nginx、Apache或其他服务器。下面介绍使用Nginx Upstream 部署openerp 的方法。</p>
-
-<h1>一 前提</h1>
-
-<p>此处假设您已经安装好 openerp ，并运行在 127.0.0.1:8069</p>
-
-<h1>二 安装Nginx</h1>
-
-<p>debian/ubuntu:</p>
-
-<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;/p>
-</span><span class='line'>
-</span><span class='line'>&lt;h1>apt-get install nginx&lt;/h1>
-</span><span class='line'>
-</span><span class='line'>&lt;p></span></code></pre></td></tr></table></div></figure></notextile></div></p>
-
-<p>redhat/centos:</p>
-
-<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;/p>
-</span><span class='line'>
-</span><span class='line'>&lt;h1>yum install nginx&lt;/h1>
-</span><span class='line'>
-</span><span class='line'>&lt;p></span></code></pre></td></tr></table></div></figure></notextile></div></p>
-
-<h1>三 配置Nginx</h1>
-
-<h2>1. 修改/etc/nginx/nginx.conf ，开启gzip 压缩</h2>
-
-<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;/p>
-</span><span class='line'>
-</span><span class='line'>&lt;h1>vi /etc/nginx/nginx.conf&lt;/h1>
-</span><span class='line'>
-</span><span class='line'>&lt;p>--------------nginx.conf 需修改内容节选--------------------------&lt;/p>
-</span><span class='line'>
-</span><span class='line'>&lt;pre>&lt;code>    gzip on;
-</span><span class='line'>    gzip_disable "msie6";
-</span><span class='line'>
-</span><span class='line'>    gzip_vary on;
-</span><span class='line'>    gzip_proxied any;
-</span><span class='line'>    gzip_comp_level 6;
-</span><span class='line'>    gzip_buffers 16 8k;
-</span><span class='line'>    gzip_http_version 1.1;
-</span><span class='line'>    #添加一个类型 application/javascript
-</span><span class='line'>    gzip_types text/plain text/css application/javascript application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript;
-</span><span class='line'>&lt;/code>&lt;/pre>
-</span><span class='line'>
-</span><span class='line'>&lt;p></span></code></pre></td></tr></table></div></figure></notextile></div></p>
-
-<p>吐槽一下，是否开启gzip，差别真不小。oe 首页加载的http://127.0.0.1/web/webclient/js 开启前文件大小是 1.4M , 开启后大小是350.6 KB （通过firebug 查看）。</p>
-
-<h2>2. 建立 openerp 配置文件</h2>
-
-<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-<span class='line-number'>42</span>
-<span class='line-number'>43</span>
-<span class='line-number'>44</span>
-<span class='line-number'>45</span>
-<span class='line-number'>46</span>
-<span class='line-number'>47</span>
-<span class='line-number'>48</span>
-<span class='line-number'>49</span>
-<span class='line-number'>50</span>
-<span class='line-number'>51</span>
-<span class='line-number'>52</span>
-<span class='line-number'>53</span>
-<span class='line-number'>54</span>
-<span class='line-number'>55</span>
-<span class='line-number'>56</span>
-<span class='line-number'>57</span>
-<span class='line-number'>58</span>
-<span class='line-number'>59</span>
-<span class='line-number'>60</span>
-<span class='line-number'>61</span>
-<span class='line-number'>62</span>
-<span class='line-number'>63</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;/p>
-</span><span class='line'>
-</span><span class='line'>&lt;h1>touch /etc/nginx/sites-enabled/openerp&lt;/h1>
-</span><span class='line'>
-</span><span class='line'>&lt;h1>vi /etc/nginx/sites-enabled/openerp&lt;/h1>
-</span><span class='line'>
-</span><span class='line'>&lt;p>--------------------openerp 文件内容---------------------------&lt;/p>
-</span><span class='line'>
-</span><span class='line'>&lt;p>proxy_temp_path /tmp/nginx_proxy_temp;
-</span><span class='line'>proxy_cache_path  /tmp/nginx_proxy_cache levels=1:2  keys_zone=oecache:100m inactive=3d max_size=1000m;&lt;/p>
-</span><span class='line'>
-</span><span class='line'>&lt;p>proxy_buffer_size     32k;              #设置代理服务器（nginx）保存用户头信息的缓冲区大小
-</span><span class='line'>proxy_buffers         4 32k;            #proxy_buffers缓冲区，网页平均在32k以下的话，这样设置
-</span><span class='line'>proxy_busy_buffers_size  64k;           #高负荷下缓冲大小（proxy_buffers*2）
-</span><span class='line'>proxy_temp_file_write_size  64k;       #设定缓存文件夹大小，大于这个值，将从upstream服务器传&lt;/p>
-</span><span class='line'>
-</span><span class='line'>&lt;p>proxy_connect_timeout      60;
-</span><span class='line'>proxy_send_timeout         60;
-</span><span class='line'>proxy_read_timeout         3000;&lt;/p>
-</span><span class='line'>
-</span><span class='line'>&lt;p>upstream oeserver{&lt;/p>
-</span><span class='line'>
-</span><span class='line'>&lt;pre>&lt;code>    server 127.0.0.1:8069;
-</span><span class='line'>&lt;/code>&lt;/pre>
-</span><span class='line'>
-</span><span class='line'>&lt;p>}&lt;/p>
-</span><span class='line'>
-</span><span class='line'>&lt;p>server {&lt;/p>
-</span><span class='line'>
-</span><span class='line'>&lt;pre>&lt;code>    server_name  www.example.com;
-</span><span class='line'>
-</span><span class='line'>    root /var/www/openerp-6.1-1/openerp/addons;
-</span><span class='line'>
-</span><span class='line'>    location /{
-</span><span class='line'>
-</span><span class='line'>            proxy_cache              oecache;
-</span><span class='line'>            #proxy_cache_key "$host$request_uri$request_body";
-</span><span class='line'>            proxy_cache_key $host$request_uri$request_body;
-</span><span class='line'>            proxy_cache_valid  200 304 1d;
-</span><span class='line'>            proxy_cache_valid  any   1d;
-</span><span class='line'>
-</span><span class='line'>            proxy_next_upstream http_502 http_504 error timeout invalid_header;
-</span><span class='line'>            proxy_pass_header Set-Cookie;
-</span><span class='line'>            proxy_set_header   Host             $host;
-</span><span class='line'>            proxy_set_header   X-Real-IP        $remote_addr;
-</span><span class='line'>            proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
-</span><span class='line'>            proxy_redirect  off;
-</span><span class='line'>
-</span><span class='line'>            proxy_pass http://oeserver;
-</span><span class='line'>
-</span><span class='line'>            proxy_buffering on;
-</span><span class='line'>            proxy_cache_valid       1d;
-</span><span class='line'>            expires 1d;
-</span><span class='line'>    }
-</span><span class='line'>
-</span><span class='line'>    location ~* \.(js|css|png|jpg|jpeg|gif|ico)$ {
-</span><span class='line'>            proxy_buffering on;
-</span><span class='line'>            proxy_cache_valid       1d;
-</span><span class='line'>            expires 1d;
-</span><span class='line'>    }
-</span><span class='line'>&lt;/code>&lt;/pre>
-</span><span class='line'>
-</span><span class='line'>&lt;p>}</span></code></pre></td></tr></table></div></figure></notextile></div></p>
-
-<h1>完成 ！</h1>
-
-<p>Nginx 此处仅仅是作为 openerp 的前端WEB服务器，Nginx 还有更大的作用是可以实现Openerp 的负载平衡。此处按下不表，呵呵</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[linux 下使用 Supervisor 管理源码启动的 OpenERP]]></title>
-    <link href="http://buke.github.com/blog/2012/07/16/user-supervisor-manager-openerp/"/>
-    <updated>2012-07-16T22:50:00+08:00</updated>
-    <id>http://buke.github.com/blog/2012/07/16/user-supervisor-manager-openerp</id>
-    <content type="html"><![CDATA[<p>从源码启动openerp，简单的做法是添加启动脚本到/etc/init.d/rc.local等，让openerp 随系统启动而运行。此类方法只在系统启动时运行，但万一程序在运行中崩溃，您可能要等到用户发现不能使用了，才去重启服务器。下面请出今天的主角： supervisor   ( http://supervisord.org/)</p>
-
-<p>Supervisor 是什么？</p>
-
-<p>Supervisor is a client/server system that allows its users to monitor and control a number of processes on UNIX-like operating systems.
-Supervisor 是一个客户端/服务器系统，允许用户监控和控制类 Unix 操作系统上的进程数。</p>
-
-<h2>1、安装</h2>
-
-<p>debian/ubuntu</p>
-
-<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>apt-get install supervisor</span></code></pre></td></tr></table></div></figure></notextile></div></p>
-
-<p>redhat/centos
-<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>yum install supervisor</span></code></pre></td></tr></table></div></figure></notextile></div></p>
-
-<h2>2、建立openerp 的配置文件</h2>
-
-<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;/p>
-</span><span class='line'>
-</span><span class='line'>&lt;h1>touch /etc/supervisor/conf.d/openerp.conf&lt;/h1>
-</span><span class='line'>
-</span><span class='line'>&lt;h1>vi /etc/supervisor/conf.d/openerp.conf&lt;/h1>
-</span><span class='line'>
-</span><span class='line'>&lt;p></span></code></pre></td></tr></table></div></figure></notextile></div></p>
-
-<p>openerp.conf 内容
-<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>[program:openerp]
-</span><span class='line'>; openerp 启动脚本
-</span><span class='line'>command=python /var/www/openerp-6.1-1/openerp-server -c /var/www/openerp-6.1-1/openerp-server.conf
-</span><span class='line'>; openerp 目录
-</span><span class='line'>directory=/var/www/openerp-6.1-1/
-</span><span class='line'>; 是否随系统启动
-</span><span class='line'>autostart=true
-</span><span class='line'>; 自动重启
-</span><span class='line'>autorestart=true
-</span><span class='line'>; 启动时间，如果超过这个时间oe还没有挂，则视为已经启动
-</span><span class='line'>startsecs=3
-</span><span class='line'>; 启动用户
-</span><span class='line'>user=www-data
-</span><span class='line'>redirect_stderr=true
-</span><span class='line'>; log 文件
-</span><span class='line'>stdout_logfile=/var/www/openerp-6.1-1/openerp-server.log
-</span><span class='line'>stdout_logfile_maxbytes=500MB
-</span><span class='line'>stdout_logfile_backups=50
-</span><span class='line'>stdout_capture_maxbytes=1MB
-</span><span class='line'>stdout_events_enabled=false
-</span><span class='line'>loglevel=warn</span></code></pre></td></tr></table></div></figure></notextile></div></p>
-
-<h2>3、 完成！</h2>
-
-<p>重启系统试试看openerp 是否已经启动。也可以想办法把openerp 搞崩溃，试试supervisor 能不能及时将openerp 重启</p>
-
-<h2>4、 常用命令</h2>
-
-<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;/p>
-</span><span class='line'>
-</span><span class='line'>&lt;h1>supervisorctl&lt;/h1>
-</span><span class='line'>
-</span><span class='line'>&lt;p>openerp                          RUNNING    pid 9454, uptime 4:43:34
-</span><span class='line'>supervisor> start openerp  #启动
-</span><span class='line'>supervisor> stop openerp   #停止
-</span><span class='line'>supervisor> restart openerp #重启
-</span><span class='line'>supervisor> status openerp #查看状态</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 ]]></content>
   </entry>
   

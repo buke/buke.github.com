@@ -3,11 +3,11 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<title>开源模块 Openerp Web PDF Report Preview & Print 简介 - 步科</title>
+	<title>OpenERP 自动编码去BOM（可用excel编辑） - 步科</title>
 	<meta name="author" content="wangbuke@gmail.com">
 
 	
-	<meta name="description" content="Openerp Web PDF Report Preview &amp; Print 下载地址： https://github.com/buke/openerp-web-pdf-preview-print openerp 官方app下载 ： http://apps.openerp.com/ &hellip;">
+	<meta name="description" content="openerp-web-import-chardet 作者：wangbuke@gmail.com 源码托管地址： https://github.com/buke/openerp-web-import-chardet OE apps 下载地址： http://apps.openerp.com/ &hellip;">
 	
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
@@ -72,30 +72,41 @@
 		
 	
 	<div id="content" class="inner"><article class="post">
-	<h2 class="title">开源模块 Openerp Web PDF Report Preview & Print 简介</h2>
-	<div class="entry-content"><p>Openerp Web PDF Report Preview &amp; Print</p>
+	<h2 class="title">OpenERP 自动编码去BOM（可用excel编辑）</h2>
+	<div class="entry-content"><p>openerp-web-import-chardet</p>
 
-<p>下载地址： https://github.com/buke/openerp-web-pdf-preview-print</p>
+<p>作者：wangbuke@gmail.com</p>
 
-<p>openerp 官方app下载 ：  http://apps.openerp.com/addon/7941</p>
+<p>源码托管地址： https://github.com/buke/openerp-web-import-chardet</p>
 
-<p>简介:</p>
+<p>OE apps 下载地址： http://apps.openerp.com/addon/8098</p>
 
-<p>将OpenERP 的PDF报表打印下载功能，改为直接在浏览器中预览打印。</p>
+<h1>功能：</h1>
 
-<p>For IE， 需要安装 Adobe Reader。</p>
+<p>自动检测OpenERP 导入的CSV文件编码 自动移除UTF8文件的BOM。安装完之后，就可以直接用EXCEL WPS等编辑好的CSV文件，导入到OpenERP中。</p>
 
-<p>For Firefox ,需要安装 Adobe Reader。</p>
+<h1>支持编码：</h1>
 
-<p>For Chrome, 神马都不用安装。</p>
+<ul>
+<li>ASCII, UTF-8</li>
+<li>Big5, GBK, GB2312, HZ-GB, HZ-GB-2312 (简体/繁体中文)</li>
+<li>EUC-JP, SHIFT_JIS, ISO-2022-JP (日文)</li>
+<li>EUC-KR, ISO-2022-KR (韩文)</li>
+<li>KOI8-R, MacCyrillic, IBM855, IBM866, ISO-8859-5, windows-1251 (斯拉夫文)</li>
+<li>ISO-8859-2, windows-1250 (匈牙利文)</li>
+<li>ISO-8859-5, windows-1251 (保加利亚文)</li>
+<li>windows-1252 (英文)</li>
+<li>ISO-8859-7, windows-1253 (希腊文)</li>
+<li>ISO-8859-8, windows-1255 (希伯来文)</li>
+<li>TIS-620 (泰文)</li>
+</ul>
 
-<p>以上在windows 上测试通过。如果浏览器阻止了弹出窗口，请点允许弹出窗口。</p>
 
-<p>系统要求：</p>
+<h1>依赖模块:</h1>
 
-<p>OpenERP 6.1</p>
+<p>python chardet (本模块已内含chardet-1.1。如果系统安装了新版本，则使用您安装的新版本.)</p>
 
-<p><img src="/images/my/oe-pdf-print.jpg"></p>
+<p><img src="/images/my/oe-chardet.jpg"></p>
 </div>
 
 
@@ -112,7 +123,7 @@
   
 
 
-<time datetime="2012-08-02T15:32:00+08:00" pubdate data-updated="true">Aug 2<span>nd</span>, 2012</time></div>
+<time datetime="2012-09-05T15:00:00+08:00" pubdate data-updated="true">Sep 5<span>th</span>, 2012</time></div>
 	<div class="tags">
 
 

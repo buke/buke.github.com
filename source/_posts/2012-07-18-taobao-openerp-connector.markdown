@@ -12,6 +12,7 @@ Taobao OpenERP Connector
 
 作者： wangbuke@gmail.com
 
+
 # 功能：
 
 1. 接受淘宝主动通知，自动添加、确认订单、发货等。

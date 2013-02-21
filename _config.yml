@@ -3,10 +3,10 @@
 # ----------------------- #
 
 url: http://buke.github.com
-title: 步科 
+title: 步科 的博客 
 subtitle: A blogging framework for hackers.
-author: wangbuke@gmail.com 
-simple_search: http://google.com/search
+author: 步科 
+simple_search: http://google.com.hk/search
 description:
 
 # Default date format is "ordinal" (resulting in "July 22nd 2007")
@@ -58,7 +58,7 @@ default_asides: [asides/recent_posts.html, asides/github.html, asides/twitter.ht
 # ----------------------- #
 
 # Github repositories
-github_user:
+github_user: buke
 github_repo_count: 0
 github_show_profile_link: true
 github_skip_forks: true

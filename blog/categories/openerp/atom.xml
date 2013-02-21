@@ -4,7 +4,7 @@
   <title><![CDATA[Category: OpenERP | 步科]]></title>
   <link href="http://buke.github.com/blog/categories/openerp/atom.xml" rel="self"/>
   <link href="http://buke.github.com/"/>
-  <updated>2013-02-21T17:36:27+08:00</updated>
+  <updated>2013-02-21T17:40:41+08:00</updated>
   <id>http://buke.github.com/</id>
   <author>
     <name><![CDATA[wangbuke@gmail.com]]></name>
@@ -12,176 +12,6 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
-  
-  <entry>
-    <title type="html"><![CDATA[Taobao OpenERP Connector 简要说明]]></title>
-    <link href="http://buke.github.com/blog/2013/02/08/taobao-openerp-connector/"/>
-    <updated>2013-02-08T16:29:00+08:00</updated>
-    <id>http://buke.github.com/blog/2013/02/08/taobao-openerp-connector</id>
-    <content type="html"><![CDATA[<p>Taobao OpenERP Connector</p>
-
-<p>项目托管地址：<a href="https://github.com/buke/openerp-taobao">https://github.com/buke/openerp-taobao</a></p>
-
-<p>作者： wangbuke@gmail.com</p>
-
-<h1>功能：</h1>
-
-<ol>
-<li>接受淘宝主动通知，自动添加、确认订单、发货等。</li>
-<li>同步淘宝订单</li>
-<li>导入淘宝产品, 同步库存</li>
-<li>导入淘宝用户</li>
-<li>自动评价，中差评预警</li>
-<li>跟踪淘宝订单物流信息, 签收提醒</li>
-<li>.... 等等等 (懒的写了，自己发现吧)</li>
-</ol>
-
-
-<h1>系统要求：</h1>
-
-<ul>
-<li>OpenERP 6.1</li>
-<li>beanstalkd</li>
-<li>pycurl</li>
-</ul>
-
-
-<h1>安装说明：</h1>
-
-<h2>1. 安装beanstalkd</h2>
-
-<h3>1.1 linux 系统</h3>
-
-<p>debian/ubuntu: # apt-get install beanstalkd</p>
-
-<p>redhat/centos: # yum install beanstalkd</p>
-
-<p>安装完成之后，开启beanstalkd的持久化选项：</p>
-
-<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;/p>
-</span><span class='line'>
-</span><span class='line'>&lt;h1>vi /etc/default/beanstalkd&lt;/h1>
-</span><span class='line'>
-</span><span class='line'>&lt;h2>Defaults for the beanstalkd init script, /etc/init.d/beanstalkd on&lt;/h2>
-</span><span class='line'>
-</span><span class='line'>&lt;h2>Debian systems. Append ``-b /var/lib/beanstalkd'' for persistent&lt;/h2>
-</span><span class='line'>
-</span><span class='line'>&lt;h2>storage.&lt;/h2>
-</span><span class='line'>
-</span><span class='line'>&lt;p>BEANSTALKD_LISTEN_ADDR=0.0.0.0
-</span><span class='line'>BEANSTALKD_LISTEN_PORT=11300&lt;/p>
-</span><span class='line'>
-</span><span class='line'>&lt;h1>DAEMON_OPTS="-l $BEANSTALKD_LISTEN_ADDR -p $BEANSTALKD_LISTEN_PORT"&lt;/h1>
-</span><span class='line'>
-</span><span class='line'>&lt;p>DAEMON_OPTS="-l $BEANSTALKD_LISTEN_ADDR -p $BEANSTALKD_LISTEN_PORT -b /var/lib/beanstalkd"&lt;/p>
-</span><span class='line'>
-</span><span class='line'>&lt;h2>Uncomment to enable startup during boot.&lt;/h2>
-</span><span class='line'>
-</span><span class='line'>&lt;p>START=yes</span></code></pre></td></tr></table></div></figure></notextile></div></p>
-
-<h3>1.2 windows 系统</h3>
-
-<p>beanstalkd 原生不能在windows 下运行，当然也有大牛用cgywin 编译了一个。请参考 http://software1987.de/2011/03/beanstalkd-unter-windows-mit-cygwin/  。编译后的 beanstalkd 下载地址是 http://software1987.de/wp-content/uploads/2011/03/beanstalkd-1.4.6-cygwin.zip</p>
-
-<p>下载解压后，打开 cmd.exe 运行</p>
-
-<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>C:\beanstalkd\bin>beanstalkd.exe -l 127.0.0.1 -p 11300 -b C:\beanstalkd</span></code></pre></td></tr></table></div></figure></notextile></div></p>
-
-<p>注意上面的目录路径，根据您的实际情况修改。 -b 后面是目录，用于存放beanstalkd 持久化的文件。 上面是直接运行，当然您也可以创建快捷方式，或者用runasservice 工具封装成windows 的服务。</p>
-
-<h2>2. 安装pycurl</h2>
-
-<h3>2.1 linux 系统</h3>
-
-<p>debian/ubuntu: # apt-get install python-pycurl</p>
-
-<p>redhat/centos: # yum install python-pycurl</p>
-
-<h3>2.2 windows 系统</h3>
-
-<h4>2.2.1 OpenERP - 源码安装</h4>
-
-<h5>2.2.1.1 安装 python （如已经安装则跳过）</h5>
-
-<p>到 http://python.org/ 下载安装，不解释</p>
-
-<h5>2.2.1.2 安装 pycurl（如已经安装则跳过）</h5>
-
-<p>到 http://www.lfd.uci.edu/~gohlke/pythonlibs/#pycurl 下载对应版本的 pycurl 安装</p>
-
-<h4>2.2.2 OpenERP - all in one</h4>
-
-<p>all in one 的版本 在安装完以上步骤之外，还需要把 C:\Python26\Lib\site-packages 目录下的 curl 目录 和 pycurl.pyd 文件 复制到 C:\Program Files\OpenERP 6.1-20120717-233333\Server\server 目录中。（注意路径！，根据实际情况修改）不然下面的安装会提示找不到pycurl。</p>
-
-<p>注意：我现在的all in one （OpenERP 6.1-20120717-233333\） python版本 2.6，所以使用all in one 版本的同学注意了，上面2步都要下载安装for python 2.6 版本的。 （通过看C:\Program Files\OpenERP 6.1-20120717-233333\Server\server\python26.dll这个文件的后缀可以知道python 版本）</p>
-
-<h2>3. 安装 Taobao OpenERP Connector 模块</h2>
-
-<p>这里和OE安装模块方法一样。首先到https://github.com/buke/openerp-taobao 下载，然后有2种方法：一种是把taobao 文件夹放到OpenERP 的 addon 目录下，第二种是把taobao 文件夹压缩为zip 文件，通过OE后台上传模块。</p>
-
-<h2>4. OpenERP conf 文件配置参数</h2>
-
-<p>Taobao OpenERP Connector 模块有几个默认配置参数如下：</p>
-
-<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>beanstalkd_interface = localhost
-</span><span class='line'>beanstalkd_port = 11300
-</span><span class='line'>taobao_stream_service = True
-</span><span class='line'>taobao_stream_thread_limit = 1
-</span><span class='line'>taobao_worker_thread_limit = 4</span></code></pre></td></tr></table></div></figure></notextile></div></p>
-
-<p> 上面是默认值，如果您不需要修改则不用放入OpenERP 启动的 conf中。反之，如果你需要修改 ，则将上面几个参数写在conf 文件中。</p>
-
-<h2>5. 关于淘宝 api 的几个问题</h2>
-
-<p>首先登陆 open.taobao.com 创建一个 C/S 架构 自用型应用，然后开通主动通知业务。</p>
-
-<p>App Key : 自己找，不解释</p>
-
-<p>App Secret: 自己找，不解释</p>
-
-<p>App SessionKey: 获取方法</p>
-
-<ol>
-<li>先访问 http://my.open.taobao.com/auth/authorize.htm?appkey={appkey}获得授权码</li>
-<li>再访问 http://container.open.taobao.com/container?authcode={授权码},会得到类似如下的字符串top_appkey=1142&amp;top_parameters=xxx&amp;top_session=xxx&amp;top_sign=xxx,字符串里面的top_session值即为SessionKey</li>
-</ol>
-
-
-<p>根据淘宝文档说明，C/S应用的 SessionKey 有效期为一年，大家到时记得更新。</p>
-
-<p>PS:</p>
-
-<p>配置淘宝商店的时候出现报错的，请检查你们的淘宝应用权限 。必须是C/S架构的商家后台系统。淘宝规定请看 http://dev.open.taobao.com/bbs/read.php?tid=24315  自2012年7月12日起，“商家后台系统标签”的申请只允许商城店铺和集市三皇冠以上商家申请。</p>
-
-<p>欢迎大家参与此项目，或者到https://github.com/buke/openerp-taobao 提需求、BUG等，也可以直接给我来信。谢谢~</p>
-]]></content>
-  </entry>
   
   <entry>
     <title type="html"><![CDATA[OpenERP 负载平衡]]></title>
@@ -511,6 +341,176 @@
 <p>OpenERP 6.1</p>
 
 <p><img src="/images/my/oe-pdf-print.jpg"></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Taobao OpenERP Connector 简要说明]]></title>
+    <link href="http://buke.github.com/blog/2012/07/18/taobao-openerp-connector/"/>
+    <updated>2012-07-18T16:29:00+08:00</updated>
+    <id>http://buke.github.com/blog/2012/07/18/taobao-openerp-connector</id>
+    <content type="html"><![CDATA[<p>Taobao OpenERP Connector</p>
+
+<p>项目托管地址：<a href="https://github.com/buke/openerp-taobao">https://github.com/buke/openerp-taobao</a></p>
+
+<p>作者： wangbuke@gmail.com</p>
+
+<h1>功能：</h1>
+
+<ol>
+<li>接受淘宝主动通知，自动添加、确认订单、发货等。</li>
+<li>同步淘宝订单</li>
+<li>导入淘宝产品, 同步库存</li>
+<li>导入淘宝用户</li>
+<li>自动评价，中差评预警</li>
+<li>跟踪淘宝订单物流信息, 签收提醒</li>
+<li>.... 等等等 (懒的写了，自己发现吧)</li>
+</ol>
+
+
+<h1>系统要求：</h1>
+
+<ul>
+<li>OpenERP 6.1</li>
+<li>beanstalkd</li>
+<li>pycurl</li>
+</ul>
+
+
+<h1>安装说明：</h1>
+
+<h2>1. 安装beanstalkd</h2>
+
+<h3>1.1 linux 系统</h3>
+
+<p>debian/ubuntu: # apt-get install beanstalkd</p>
+
+<p>redhat/centos: # yum install beanstalkd</p>
+
+<p>安装完成之后，开启beanstalkd的持久化选项：</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;h1>vi /etc/default/beanstalkd&lt;/h1>
+</span><span class='line'>
+</span><span class='line'>&lt;h2>Defaults for the beanstalkd init script, /etc/init.d/beanstalkd on&lt;/h2>
+</span><span class='line'>
+</span><span class='line'>&lt;h2>Debian systems. Append ``-b /var/lib/beanstalkd'' for persistent&lt;/h2>
+</span><span class='line'>
+</span><span class='line'>&lt;h2>storage.&lt;/h2>
+</span><span class='line'>
+</span><span class='line'>&lt;p>BEANSTALKD_LISTEN_ADDR=0.0.0.0
+</span><span class='line'>BEANSTALKD_LISTEN_PORT=11300&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;h1>DAEMON_OPTS="-l $BEANSTALKD_LISTEN_ADDR -p $BEANSTALKD_LISTEN_PORT"&lt;/h1>
+</span><span class='line'>
+</span><span class='line'>&lt;p>DAEMON_OPTS="-l $BEANSTALKD_LISTEN_ADDR -p $BEANSTALKD_LISTEN_PORT -b /var/lib/beanstalkd"&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;h2>Uncomment to enable startup during boot.&lt;/h2>
+</span><span class='line'>
+</span><span class='line'>&lt;p>START=yes</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<h3>1.2 windows 系统</h3>
+
+<p>beanstalkd 原生不能在windows 下运行，当然也有大牛用cgywin 编译了一个。请参考 http://software1987.de/2011/03/beanstalkd-unter-windows-mit-cygwin/  。编译后的 beanstalkd 下载地址是 http://software1987.de/wp-content/uploads/2011/03/beanstalkd-1.4.6-cygwin.zip</p>
+
+<p>下载解压后，打开 cmd.exe 运行</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>C:\beanstalkd\bin>beanstalkd.exe -l 127.0.0.1 -p 11300 -b C:\beanstalkd</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>注意上面的目录路径，根据您的实际情况修改。 -b 后面是目录，用于存放beanstalkd 持久化的文件。 上面是直接运行，当然您也可以创建快捷方式，或者用runasservice 工具封装成windows 的服务。</p>
+
+<h2>2. 安装pycurl</h2>
+
+<h3>2.1 linux 系统</h3>
+
+<p>debian/ubuntu: # apt-get install python-pycurl</p>
+
+<p>redhat/centos: # yum install python-pycurl</p>
+
+<h3>2.2 windows 系统</h3>
+
+<h4>2.2.1 OpenERP - 源码安装</h4>
+
+<h5>2.2.1.1 安装 python （如已经安装则跳过）</h5>
+
+<p>到 http://python.org/ 下载安装，不解释</p>
+
+<h5>2.2.1.2 安装 pycurl（如已经安装则跳过）</h5>
+
+<p>到 http://www.lfd.uci.edu/~gohlke/pythonlibs/#pycurl 下载对应版本的 pycurl 安装</p>
+
+<h4>2.2.2 OpenERP - all in one</h4>
+
+<p>all in one 的版本 在安装完以上步骤之外，还需要把 C:\Python26\Lib\site-packages 目录下的 curl 目录 和 pycurl.pyd 文件 复制到 C:\Program Files\OpenERP 6.1-20120717-233333\Server\server 目录中。（注意路径！，根据实际情况修改）不然下面的安装会提示找不到pycurl。</p>
+
+<p>注意：我现在的all in one （OpenERP 6.1-20120717-233333\） python版本 2.6，所以使用all in one 版本的同学注意了，上面2步都要下载安装for python 2.6 版本的。 （通过看C:\Program Files\OpenERP 6.1-20120717-233333\Server\server\python26.dll这个文件的后缀可以知道python 版本）</p>
+
+<h2>3. 安装 Taobao OpenERP Connector 模块</h2>
+
+<p>这里和OE安装模块方法一样。首先到https://github.com/buke/openerp-taobao 下载，然后有2种方法：一种是把taobao 文件夹放到OpenERP 的 addon 目录下，第二种是把taobao 文件夹压缩为zip 文件，通过OE后台上传模块。</p>
+
+<h2>4. OpenERP conf 文件配置参数</h2>
+
+<p>Taobao OpenERP Connector 模块有几个默认配置参数如下：</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>beanstalkd_interface = localhost
+</span><span class='line'>beanstalkd_port = 11300
+</span><span class='line'>taobao_stream_service = True
+</span><span class='line'>taobao_stream_thread_limit = 1
+</span><span class='line'>taobao_worker_thread_limit = 4</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p> 上面是默认值，如果您不需要修改则不用放入OpenERP 启动的 conf中。反之，如果你需要修改 ，则将上面几个参数写在conf 文件中。</p>
+
+<h2>5. 关于淘宝 api 的几个问题</h2>
+
+<p>首先登陆 open.taobao.com 创建一个 C/S 架构 自用型应用，然后开通主动通知业务。</p>
+
+<p>App Key : 自己找，不解释</p>
+
+<p>App Secret: 自己找，不解释</p>
+
+<p>App SessionKey: 获取方法</p>
+
+<ol>
+<li>先访问 http://my.open.taobao.com/auth/authorize.htm?appkey={appkey}获得授权码</li>
+<li>再访问 http://container.open.taobao.com/container?authcode={授权码},会得到类似如下的字符串top_appkey=1142&amp;top_parameters=xxx&amp;top_session=xxx&amp;top_sign=xxx,字符串里面的top_session值即为SessionKey</li>
+</ol>
+
+
+<p>根据淘宝文档说明，C/S应用的 SessionKey 有效期为一年，大家到时记得更新。</p>
+
+<p>PS:</p>
+
+<p>配置淘宝商店的时候出现报错的，请检查你们的淘宝应用权限 。必须是C/S架构的商家后台系统。淘宝规定请看 http://dev.open.taobao.com/bbs/read.php?tid=24315  自2012年7月12日起，“商家后台系统标签”的申请只允许商城店铺和集市三皇冠以上商家申请。</p>
+
+<p>欢迎大家参与此项目，或者到https://github.com/buke/openerp-taobao 提需求、BUG等，也可以直接给我来信。谢谢~</p>
 ]]></content>
   </entry>
   

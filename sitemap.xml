@@ -10,7 +10,7 @@
     </url>
     <url>
         <loc>http://buke.github.com/blog/2012/07/18/taobao-openerp-connector/</loc>
-        <lastmod>2013-02-21T17:43:55+08:00</lastmod>
+        <lastmod>2013-02-21T19:50:35+08:00</lastmod>
     </url>
     <url>
         <loc>
@@ -36,7 +36,11 @@
     </url>
     <url>
         <loc>http://buke.github.com/blog/archives/</loc>
-        <lastmod>2013-02-21T17:43:55+08:00</lastmod>
+        <lastmod>2013-02-21T19:50:35+08:00</lastmod>
+    </url>
+    <url>
+        <loc>http://buke.github.com/about/</loc>
+        <lastmod>2013-02-21T19:58:19+08:00</lastmod>
     </url>
     <url>
         <loc>http://buke.github.com/robots.txt</loc>
@@ -44,6 +48,6 @@
     </url>
     <url>
         <loc>http://buke.github.com/</loc>
-        <lastmod>2013-02-21T17:43:55+08:00</lastmod>
+        <lastmod>2013-02-21T19:50:35+08:00</lastmod>
     </url>
 </urlset>

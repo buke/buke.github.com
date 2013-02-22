@@ -4,7 +4,7 @@
   <title><![CDATA[步科 的博客]]></title>
   <link href="http://buke.github.com/atom.xml" rel="self"/>
   <link href="http://buke.github.com/"/>
-  <updated>2013-02-21T20:54:28+08:00</updated>
+  <updated>2013-02-22T19:25:17+08:00</updated>
   <id>http://buke.github.com/</id>
   <author>
     <name><![CDATA[步科]]></name>
@@ -12,6 +12,36 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Openerp Web PDF Report Preview &amp; Print 模块升级至 7.0]]></title>
+    <link href="http://buke.github.com/blog/2013/02/22/openerp-web-pdf-report-preview-and-print-update-7-dot-0/"/>
+    <updated>2013-02-22T19:18:00+08:00</updated>
+    <id>http://buke.github.com/blog/2013/02/22/openerp-web-pdf-report-preview-and-print-update-7-dot-0</id>
+    <content type="html"><![CDATA[<p>Openerp Web PDF Report Preview &amp; Print</p>
+
+<p>下载地址： <a href="https://github.com/buke/openerp-web-pdf-preview-print">https://github.com/buke/openerp-web-pdf-preview-print</a></p>
+
+<p>简介：</p>
+
+<p>将OpenERP 的PDF报表打印下载功能，改为直接在浏览器中预览打印。</p>
+
+<ul>
+<li>For IE， 需要安装 Adobe Reader。</li>
+<li>For Firefox 19 + , 神马都不用安装。</li>
+<li>For Chrome, 神马都不用安装。</li>
+</ul>
+
+
+<p>以上在windows 上测试通过。如果浏览器阻止了弹出窗口，请点允许弹出窗口。</p>
+
+<p>系统要求：</p>
+
+<p>OpenERP 7.0</p>
+
+<p><img src="http://buke.github.com/images/my/oe-pdf-7.jpg"></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Tryton 相关软件简介及名字背后的神话]]></title>

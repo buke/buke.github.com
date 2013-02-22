@@ -35,8 +35,14 @@
         <lastmod>2013-02-21T17:36:26+08:00</lastmod>
     </url>
     <url>
+        <loc>
+            http://buke.github.com/blog/2013/02/22/openerp-web-pdf-report-preview-and-print-update-7-dot-0/
+        </loc>
+        <lastmod>2013-02-22T19:25:00+08:00</lastmod>
+    </url>
+    <url>
         <loc>http://buke.github.com/blog/archives/</loc>
-        <lastmod>2013-02-21T19:50:35+08:00</lastmod>
+        <lastmod>2013-02-22T19:25:00+08:00</lastmod>
     </url>
     <url>
         <loc>http://buke.github.com/about/</loc>
@@ -48,6 +54,6 @@
     </url>
     <url>
         <loc>http://buke.github.com/</loc>
-        <lastmod>2013-02-21T19:50:35+08:00</lastmod>
+        <lastmod>2013-02-22T19:25:00+08:00</lastmod>
     </url>
 </urlset>

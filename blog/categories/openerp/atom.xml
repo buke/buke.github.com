@@ -4,7 +4,7 @@
   <title><![CDATA[Category: OpenERP | 步科 的博客]]></title>
   <link href="http://buke.github.com/blog/categories/openerp/atom.xml" rel="self"/>
   <link href="http://buke.github.com/"/>
-  <updated>2013-02-22T19:25:17+08:00</updated>
+  <updated>2013-02-22T19:38:42+08:00</updated>
   <id>http://buke.github.com/</id>
   <author>
     <name><![CDATA[步科]]></name>
@@ -37,7 +37,26 @@
 
 <p>系统要求：</p>
 
-<p>OpenERP 7.0</p>
+<ul>
+<li>OpenERP 7.0</li>
+</ul>
+
+
+<p>注：</p>
+
+<ol>
+<li>openerp-7.0-20130222-002152 下测试通过</li>
+<li>之前版本可能会出现以下错误：</li>
+</ol>
+
+
+<p>TypeError: this.get_action_manager(...) is undefined on Firefox</p>
+
+<p>TypeError: Cannot call method 'get_title' of undefined on Chrome / IE</p>
+
+<p>解决办法有2种</p>
+
+<p>F5 刷新页面重新加载 或者  升级OpenERP 版本</p>
 
 <p><img src="/images/my/oe-pdf-7.jpg"></p>
 ]]></content>

@@ -4,7 +4,7 @@
   <title><![CDATA[步科 的博客]]></title>
   <link href="http://buke.github.com/atom.xml" rel="self"/>
   <link href="http://buke.github.com/"/>
-  <updated>2013-02-26T19:37:10+08:00</updated>
+  <updated>2013-02-26T22:59:17+08:00</updated>
   <id>http://buke.github.com/</id>
   <author>
     <name><![CDATA[步科]]></name>
@@ -60,42 +60,32 @@
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">def</span> <span class="nf">_initialize_db</span><span class="p">(</span><span class="n">serv</span><span class="p">,</span> <span class="nb">id</span><span class="p">,</span> <span class="n">db_name</span><span class="p">,</span> <span class="n">demo</span><span class="p">,</span> <span class="n">lang</span><span class="p">,</span> <span class="n">user_password</span><span class="p">):</span>
-</span><span class='line'>    <span class="n">cr</span> <span class="o">=</span> <span class="bp">None</span>
-</span><span class='line'>    <span class="k">try</span><span class="p">:</span>
-</span><span class='line'>        <span class="n">serv</span><span class="o">.</span><span class="n">actions</span><span class="p">[</span><span class="nb">id</span><span class="p">][</span><span class="s">&#39;progress&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-</span><span class='line'>        <span class="n">cr</span> <span class="o">=</span> <span class="n">sql_db</span><span class="o">.</span><span class="n">db_connect</span><span class="p">(</span><span class="n">db_name</span><span class="p">)</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
-</span><span class='line'>        <span class="n">openerp</span><span class="o">.</span><span class="n">modules</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span><span class="n">cr</span><span class="p">)</span> <span class="c"># TODO this should be removed as it is done by pooler.restart_pool.</span>
-</span><span class='line'>        <span class="n">tools</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s">&#39;lang&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lang</span>
-</span><span class='line'>        <span class="n">cr</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
-</span><span class='line'>        <span class="n">cr</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-</span><span class='line'>
-</span><span class='line'>        <span class="n">pool</span> <span class="o">=</span> <span class="n">pooler</span><span class="o">.</span><span class="n">restart_pool</span><span class="p">(</span><span class="n">db_name</span><span class="p">,</span> <span class="n">demo</span><span class="p">,</span> <span class="n">serv</span><span class="o">.</span><span class="n">actions</span><span class="p">[</span><span class="nb">id</span><span class="p">],</span>
-</span><span class='line'>                                   <span class="n">update_module</span><span class="o">=</span><span class="bp">True</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
-</span><span class='line'>
-</span><span class='line'>        <span class="n">cr</span> <span class="o">=</span> <span class="n">sql_db</span><span class="o">.</span><span class="n">db_connect</span><span class="p">(</span><span class="n">db_name</span><span class="p">)</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">def</span> <span class="nf">login</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">login</span><span class="p">,</span> <span class="n">password</span><span class="p">):</span>
+</span><span class='line'>    <span class="n">pool</span> <span class="o">=</span> <span class="n">pooler</span><span class="o">.</span><span class="n">get_pool</span><span class="p">(</span><span class="n">db</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">user_obj</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;res.users&#39;</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">user_obj</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">login</span><span class="p">,</span> <span class="n">password</span><span class="p">)</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>打开 restart_pool 定义</p>
+<p>打开 get_db 和 get_db_and_pool 定义</p>
 
 <figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">def</span> <span class="nf">restart_pool</span><span class="p">(</span><span class="n">db_name</span><span class="p">,</span> <span class="n">force_demo</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">update_module</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
-</span><span class='line'>    <span class="sd">&quot;&quot;&quot;Delete an existing registry and return a database connection and a newly initialized registry.&quot;&quot;&quot;</span>
-</span><span class='line'>    <span class="n">registry</span> <span class="o">=</span> <span class="n">RegistryManager</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">db_name</span><span class="p">,</span> <span class="n">force_demo</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">update_module</span><span class="p">)</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">def</span> <span class="nf">get_db</span><span class="p">(</span><span class="n">db_name</span><span class="p">):</span>
+</span><span class='line'>    <span class="sd">&quot;&quot;&quot;Return a database connection. The corresponding registry is initialized.&quot;&quot;&quot;</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">get_db_and_pool</span><span class="p">(</span><span class="n">db_name</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">get_db_and_pool</span><span class="p">(</span><span class="n">db_name</span><span class="p">,</span> <span class="n">force_demo</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">update_module</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+</span><span class='line'>    <span class="sd">&quot;&quot;&quot;Create and return a database connection and a newly initialized registry.&quot;&quot;&quot;</span>
+</span><span class='line'>    <span class="n">registry</span> <span class="o">=</span> <span class="n">RegistryManager</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">db_name</span><span class="p">,</span> <span class="n">force_demo</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">update_module</span><span class="p">)</span>
 </span><span class='line'>    <span class="k">return</span> <span class="n">registry</span><span class="o">.</span><span class="n">db</span><span class="p">,</span> <span class="n">registry</span>
 </span></code></pre></td></tr></table></div></figure>
 

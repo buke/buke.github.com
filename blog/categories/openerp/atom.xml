@@ -4,7 +4,7 @@
   <title><![CDATA[Category: OpenERP | 步科 的博客]]></title>
   <link href="http://buke.github.com/blog/categories/openerp/atom.xml" rel="self"/>
   <link href="http://buke.github.com/"/>
-  <updated>2013-02-22T19:38:42+08:00</updated>
+  <updated>2013-02-26T19:36:03+08:00</updated>
   <id>http://buke.github.com/</id>
   <author>
     <name><![CDATA[步科]]></name>
@@ -12,6 +12,807 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[OpenERP 模块动态加载原理及启动分析]]></title>
+    <link href="http://buke.github.com/blog/2013/02/26/openerp-dynamic-loading-and-booting-way/"/>
+    <updated>2013-02-26T15:48:00+08:00</updated>
+    <id>http://buke.github.com/blog/2013/02/26/openerp-dynamic-loading-and-booting-way</id>
+    <content type="html"><![CDATA[<p>一般来说我们在编程中，对象定义都是预先定义好的。一些 OOP 语言（包括 Python/Java）允许对象是 自省的（也称为 反射）。即，自省对象能够描述自己：实例属于哪个类？类有哪些祖先？对象可以用哪些方法和属性？自省让处理对象的函数或方法根据传递给函数或方法的对象类型来做决定。即允许对象在运行时动态改变方法成员等属性。</p>
+
+<p>得益于OpenERP ORM 模型的精巧设计，实际上 OpenERP 运行时也是动态读取模块信息并动态构建对象的。如在模块开发中，继承了 'res.users', 新增一个方法或新增一个字段。在OpenERP 导入该模块后， OpenERP 会马上重构 'res.users' 对象并将新增的方法或字段添加到该对象。那么，OpenERP 是如何做到这点的呢？ 让我们从OpenERP 的启动部分开始分析：</p>
+
+<p>首先，OpenERP 启动相关的服务, 这时并没有建立数据库链接和载入对象</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="k">if</span> <span class="ow">not</span> <span class="n">config</span><span class="p">[</span><span class="s">&quot;stop_after_init&quot;</span><span class="p">]:</span>
+</span><span class='line'>    <span class="n">setup_pid_file</span><span class="p">()</span>
+</span><span class='line'>    <span class="c"># Some module register themselves when they are loaded so we need the</span>
+</span><span class='line'>    <span class="c"># services to be running before loading any registry.</span>
+</span><span class='line'>    <span class="k">if</span> <span class="n">config</span><span class="p">[</span><span class="s">&#39;workers&#39;</span><span class="p">]:</span>
+</span><span class='line'>        <span class="n">openerp</span><span class="o">.</span><span class="n">service</span><span class="o">.</span><span class="n">start_services_workers</span><span class="p">()</span>
+</span><span class='line'>    <span class="k">else</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">openerp</span><span class="o">.</span><span class="n">service</span><span class="o">.</span><span class="n">start_services</span><span class="p">()</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>不过可以在配置文件中指定 'db_name' 参数，可以让 OpenERP 在启动时加载指定数据库的对象并启动 Cron。 实际生产环境中建议启用该参数，否则需要在启动OpenERP后，登录一次OpenERP 在会加载对象并启动CRON</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="k">if</span> <span class="n">config</span><span class="p">[</span><span class="s">&#39;db_name&#39;</span><span class="p">]:</span>
+</span><span class='line'>    <span class="k">for</span> <span class="n">dbname</span> <span class="ow">in</span> <span class="n">config</span><span class="p">[</span><span class="s">&#39;db_name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">):</span>
+</span><span class='line'>        <span class="n">preload_registry</span><span class="p">(</span><span class="n">dbname</span><span class="p">)</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>不指定 'db_name' 参数情况下，OpenERP 会直到用户登录时才会初始化指定数据库。
+<div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">def</span> <span class="nf">_initialize_db</span><span class="p">(</span><span class="n">serv</span><span class="p">,</span> <span class="nb">id</span><span class="p">,</span> <span class="n">db_name</span><span class="p">,</span> <span class="n">demo</span><span class="p">,</span> <span class="n">lang</span><span class="p">,</span> <span class="n">user_password</span><span class="p">):</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">cr</span> <span class="o">=</span> <span class="bp">None</span>
+</span><span class='line'><span class="k">try</span><span class="p">:</span>
+</span><span class='line'>    <span class="n">serv</span><span class="o">.</span><span class="n">actions</span><span class="p">[</span><span class="nb">id</span><span class="p">][</span><span class="s">&#39;progress&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+</span><span class='line'>    <span class="n">cr</span> <span class="o">=</span> <span class="n">sql_db</span><span class="o">.</span><span class="n">db_connect</span><span class="p">(</span><span class="n">db_name</span><span class="p">)</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+</span><span class='line'>    <span class="n">openerp</span><span class="o">.</span><span class="n">modules</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span><span class="n">cr</span><span class="p">)</span> <span class="c"># TODO this should be removed as it is done by pooler.restart_pool.</span>
+</span><span class='line'>    <span class="n">tools</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s">&#39;lang&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lang</span>
+</span><span class='line'>    <span class="n">cr</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+</span><span class='line'>    <span class="n">cr</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">pool</span> <span class="o">=</span> <span class="n">pooler</span><span class="o">.</span><span class="n">restart_pool</span><span class="p">(</span><span class="n">db_name</span><span class="p">,</span> <span class="n">demo</span><span class="p">,</span> <span class="n">serv</span><span class="o">.</span><span class="n">actions</span><span class="p">[</span><span class="nb">id</span><span class="p">],</span>
+</span><span class='line'>                               <span class="n">update_module</span><span class="o">=</span><span class="bp">True</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">cr</span> <span class="o">=</span> <span class="n">sql_db</span><span class="o">.</span><span class="n">db_connect</span><span class="p">(</span><span class="n">db_name</span><span class="p">)</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>打开 restart_pool 定义
+<div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">def</span> <span class="nf">restart_pool</span><span class="p">(</span><span class="n">db_name</span><span class="p">,</span> <span class="n">force_demo</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">update_module</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="s">&quot;&quot;&quot;Delete an existing registry and return a database connection and a newly initialized registry.&quot;&quot;&quot;</span>
+</span><span class='line'><span class="n">registry</span> <span class="o">=</span> <span class="n">RegistryManager</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">db_name</span><span class="p">,</span> <span class="n">force_demo</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">update_module</span><span class="p">)</span>
+</span><span class='line'><span class="k">return</span> <span class="n">registry</span><span class="o">.</span><span class="n">db</span><span class="p">,</span> <span class="n">registry</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>顺藤摸瓜，看RegistryManager.new 定义
+<div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span>        <span class="k">try</span><span class="p">:</span>
+</span><span class='line'>            <span class="c"># This should be a method on Registry</span>
+</span><span class='line'>            <span class="n">openerp</span><span class="o">.</span><span class="n">modules</span><span class="o">.</span><span class="n">load_modules</span><span class="p">(</span><span class="n">registry</span><span class="o">.</span><span class="n">db</span><span class="p">,</span> <span class="n">force_demo</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">update_module</span><span class="p">)</span>
+</span><span class='line'>        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+</span><span class='line'>            <span class="k">del</span> <span class="n">cls</span><span class="o">.</span><span class="n">registries</span><span class="p">[</span><span class="n">db_name</span><span class="p">]</span>
+</span><span class='line'>            <span class="k">raise</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>然后看到 load_modules, 终于要加载了，嘿嘿。</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span>    <span class="c"># STEP 1: LOAD BASE (must be done before module dependencies can be computed for later steps) </span>
+</span><span class='line'>    <span class="n">graph</span> <span class="o">=</span> <span class="n">openerp</span><span class="o">.</span><span class="n">modules</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">Graph</span><span class="p">()</span>
+</span><span class='line'>    <span class="n">graph</span><span class="o">.</span><span class="n">add_module</span><span class="p">(</span><span class="n">cr</span><span class="p">,</span> <span class="s">&#39;base&#39;</span><span class="p">,</span> <span class="n">force</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">if</span> <span class="ow">not</span> <span class="n">graph</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">_logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s">&#39;module base cannot be loaded! (hint: verify addons-path)&#39;</span><span class="p">)</span>
+</span><span class='line'>        <span class="k">raise</span> <span class="n">osv</span><span class="o">.</span><span class="n">osv</span><span class="o">.</span><span class="n">except_osv</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Could not load base module&#39;</span><span class="p">),</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;module base cannot be loaded! (hint: verify addons-path)&#39;</span><span class="p">))</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c"># processed_modules: for cleanup step after install</span>
+</span><span class='line'>    <span class="c"># loaded_modules: to avoid double loading</span>
+</span><span class='line'>    <span class="n">report</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">_assertion_report</span>
+</span><span class='line'>    <span class="n">loaded_modules</span><span class="p">,</span> <span class="n">processed_modules</span> <span class="o">=</span> <span class="n">load_module_graph</span><span class="p">(</span><span class="n">cr</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">perform_checks</span><span class="o">=</span><span class="n">update_module</span><span class="p">,</span> <span class="n">report</span><span class="o">=</span><span class="n">report</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">if</span> <span class="n">tools</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s">&#39;load_language&#39;</span><span class="p">]:</span>
+</span><span class='line'>        <span class="k">for</span> <span class="n">lang</span> <span class="ow">in</span> <span class="n">tools</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s">&#39;load_language&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">):</span>
+</span><span class='line'>            <span class="n">tools</span><span class="o">.</span><span class="n">load_language</span><span class="p">(</span><span class="n">cr</span><span class="p">,</span> <span class="n">lang</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c"># STEP 2: Mark other modules to be loaded/updated</span>
+</span><span class='line'>    <span class="k">if</span> <span class="n">update_module</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">modobj</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;ir.module.module&#39;</span><span class="p">)</span>
+</span><span class='line'>        <span class="k">if</span> <span class="p">(</span><span class="s">&#39;base&#39;</span> <span class="ow">in</span> <span class="n">tools</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s">&#39;init&#39;</span><span class="p">])</span> <span class="ow">or</span> <span class="p">(</span><span class="s">&#39;base&#39;</span> <span class="ow">in</span> <span class="n">tools</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s">&#39;update&#39;</span><span class="p">]):</span>
+</span><span class='line'>            <span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;updating modules list&#39;</span><span class="p">)</span>
+</span><span class='line'>            <span class="n">modobj</span><span class="o">.</span><span class="n">update_list</span><span class="p">(</span><span class="n">cr</span><span class="p">,</span> <span class="n">SUPERUSER_ID</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="n">_check_module_names</span><span class="p">(</span><span class="n">cr</span><span class="p">,</span> <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span><span class="n">tools</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s">&#39;init&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">tools</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s">&#39;update&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="n">mods</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">tools</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s">&#39;init&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">tools</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s">&#39;init&#39;</span><span class="p">][</span><span class="n">k</span><span class="p">]]</span>
+</span><span class='line'>        <span class="k">if</span> <span class="n">mods</span><span class="p">:</span>
+</span><span class='line'>            <span class="n">ids</span> <span class="o">=</span> <span class="n">modobj</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">cr</span><span class="p">,</span> <span class="n">SUPERUSER_ID</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;&amp;amp;&#39;</span><span class="p">,</span> <span class="p">(</span><span class="s">&#39;state&#39;</span><span class="p">,</span> <span class="s">&#39;=&#39;</span><span class="p">,</span> <span class="s">&#39;uninstalled&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;name&#39;</span><span class="p">,</span> <span class="s">&#39;in&#39;</span><span class="p">,</span> <span class="n">mods</span><span class="p">)])</span>
+</span><span class='line'>            <span class="k">if</span> <span class="n">ids</span><span class="p">:</span>
+</span><span class='line'>                <span class="n">modobj</span><span class="o">.</span><span class="n">button_install</span><span class="p">(</span><span class="n">cr</span><span class="p">,</span> <span class="n">SUPERUSER_ID</span><span class="p">,</span> <span class="n">ids</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="n">mods</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">tools</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s">&#39;update&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">tools</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s">&#39;update&#39;</span><span class="p">][</span><span class="n">k</span><span class="p">]]</span>
+</span><span class='line'>        <span class="k">if</span> <span class="n">mods</span><span class="p">:</span>
+</span><span class='line'>            <span class="n">ids</span> <span class="o">=</span> <span class="n">modobj</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">cr</span><span class="p">,</span> <span class="n">SUPERUSER_ID</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;&amp;amp;&#39;</span><span class="p">,</span> <span class="p">(</span><span class="s">&#39;state&#39;</span><span class="p">,</span> <span class="s">&#39;=&#39;</span><span class="p">,</span> <span class="s">&#39;installed&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;name&#39;</span><span class="p">,</span> <span class="s">&#39;in&#39;</span><span class="p">,</span> <span class="n">mods</span><span class="p">)])</span>
+</span><span class='line'>            <span class="k">if</span> <span class="n">ids</span><span class="p">:</span>
+</span><span class='line'>                <span class="n">modobj</span><span class="o">.</span><span class="n">button_upgrade</span><span class="p">(</span><span class="n">cr</span><span class="p">,</span> <span class="n">SUPERUSER_ID</span><span class="p">,</span> <span class="n">ids</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="n">cr</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;update ir_module_module set state=</span><span class="si">%s</span><span class="s"> where name=</span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s">&#39;installed&#39;</span><span class="p">,</span> <span class="s">&#39;base&#39;</span><span class="p">))</span>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'>    <span class="c"># STEP 3: Load marked modules (skipping base which was done in STEP 1)</span>
+</span><span class='line'>    <span class="c"># IMPORTANT: this is done in two parts, first loading all installed or</span>
+</span><span class='line'>    <span class="c">#            partially installed modules (i.e. installed/to upgrade), to</span>
+</span><span class='line'>    <span class="c">#            offer a consistent system to the second part: installing</span>
+</span><span class='line'>    <span class="c">#            newly selected modules.</span>
+</span><span class='line'>    <span class="c">#            We include the modules &#39;to remove&#39; in the first step, because</span>
+</span><span class='line'>    <span class="c">#            they are part of the &quot;currently installed&quot; modules. They will</span>
+</span><span class='line'>    <span class="c">#            be dropped in STEP 6 later, before restarting the loading</span>
+</span><span class='line'>    <span class="c">#            process.</span>
+</span><span class='line'>    <span class="n">states_to_load</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;installed&#39;</span><span class="p">,</span> <span class="s">&#39;to upgrade&#39;</span><span class="p">,</span> <span class="s">&#39;to remove&#39;</span><span class="p">]</span>
+</span><span class='line'>    <span class="n">processed</span> <span class="o">=</span> <span class="n">load_marked_modules</span><span class="p">(</span><span class="n">cr</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="n">states_to_load</span><span class="p">,</span> <span class="n">force</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">report</span><span class="p">,</span> <span class="n">loaded_modules</span><span class="p">,</span> <span class="n">update_module</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">processed_modules</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">processed</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">if</span> <span class="n">update_module</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">states_to_load</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;to install&#39;</span><span class="p">]</span>
+</span><span class='line'>        <span class="n">processed</span> <span class="o">=</span> <span class="n">load_marked_modules</span><span class="p">(</span><span class="n">cr</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="n">states_to_load</span><span class="p">,</span> <span class="n">force</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">report</span><span class="p">,</span> <span class="n">loaded_modules</span><span class="p">,</span> <span class="n">update_module</span><span class="p">)</span>
+</span><span class='line'>        <span class="n">processed_modules</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">processed</span><span class="p">)</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>这里，第一步是加载核心模块 ['base']，第二步加载需要升级或预载的模块，第三步加载已安装的模块。实际加载语句是：</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span>    <span class="n">processed</span> <span class="o">=</span> <span class="n">load_marked_modules</span><span class="p">(</span><span class="n">cr</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="n">states_to_load</span><span class="p">,</span> <span class="n">force</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">report</span><span class="p">,</span> <span class="n">loaded_modules</span><span class="p">,</span> <span class="n">update_module</span><span class="p">)</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>查看 load_marked_module 定义：
+<div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">def</span> <span class="nf">load_marked_modules</span><span class="p">(</span><span class="n">cr</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="n">states</span><span class="p">,</span> <span class="n">force</span><span class="p">,</span> <span class="n">progressdict</span><span class="p">,</span> <span class="n">report</span><span class="p">,</span> <span class="n">loaded_modules</span><span class="p">,</span> <span class="n">perform_checks</span><span class="p">):</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="s">&quot;&quot;&quot;Loads modules marked with ``states``, adding them to ``graph`` and</span>
+</span><span class='line'><span class="s">   ``loaded_modules`` and returns a list of installed/upgraded modules.&quot;&quot;&quot;</span>
+</span><span class='line'><span class="n">processed_modules</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span class='line'><span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+</span><span class='line'>    <span class="n">cr</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;SELECT name from ir_module_module WHERE state IN </span><span class="si">%s</span><span class="s">&quot;</span> <span class="p">,(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">states</span><span class="p">),))</span>
+</span><span class='line'>    <span class="n">module_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="p">(</span><span class="n">name</span><span class="p">,)</span> <span class="ow">in</span> <span class="n">cr</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">graph</span><span class="p">]</span>
+</span><span class='line'>    <span class="n">graph</span><span class="o">.</span><span class="n">add_modules</span><span class="p">(</span><span class="n">cr</span><span class="p">,</span> <span class="n">module_list</span><span class="p">,</span> <span class="n">force</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Updating graph with </span><span class="si">%d</span><span class="s"> more modules&#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">module_list</span><span class="p">))</span>
+</span><span class='line'>    <span class="n">loaded</span><span class="p">,</span> <span class="n">processed</span> <span class="o">=</span> <span class="n">load_module_graph</span><span class="p">(</span><span class="n">cr</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="n">progressdict</span><span class="p">,</span> <span class="n">report</span><span class="o">=</span><span class="n">report</span><span class="p">,</span> <span class="n">skip_modules</span><span class="o">=</span><span class="n">loaded_modules</span><span class="p">,</span> <span class="n">perform_checks</span><span class="o">=</span><span class="n">perform_checks</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">processed_modules</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">processed</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">loaded_modules</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">loaded</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">if</span> <span class="ow">not</span> <span class="n">processed</span><span class="p">:</span> <span class="k">break</span>
+</span><span class='line'><span class="k">return</span> <span class="n">processed_modules</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>重点是 load_module_graph</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="c"># register, instantiate and initialize models for each modules</span>
+</span><span class='line'><span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">package</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">graph</span><span class="p">):</span>
+</span><span class='line'>    <span class="n">module_name</span> <span class="o">=</span> <span class="n">package</span><span class="o">.</span><span class="n">name</span>
+</span><span class='line'>    <span class="n">module_id</span> <span class="o">=</span> <span class="n">package</span><span class="o">.</span><span class="n">id</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">if</span> <span class="n">skip_modules</span> <span class="ow">and</span> <span class="n">module_name</span> <span class="ow">in</span> <span class="n">skip_modules</span><span class="p">:</span>
+</span><span class='line'>        <span class="k">continue</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;module </span><span class="si">%s</span><span class="s">: loading objects&#39;</span><span class="p">,</span> <span class="n">package</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">migrations</span><span class="o">.</span><span class="n">migrate_module</span><span class="p">(</span><span class="n">package</span><span class="p">,</span> <span class="s">&#39;pre&#39;</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">load_openerp_module</span><span class="p">(</span><span class="n">package</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">models</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">cr</span><span class="p">,</span> <span class="n">package</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">loaded_modules</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">package</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">package</span><span class="p">,</span> <span class="s">&#39;init&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">package</span><span class="p">,</span> <span class="s">&#39;update&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">package</span><span class="o">.</span><span class="n">state</span> <span class="ow">in</span> <span class="p">(</span><span class="s">&#39;to install&#39;</span><span class="p">,</span> <span class="s">&#39;to upgrade&#39;</span><span class="p">):</span>
+</span><span class='line'>        <span class="n">init_module_models</span><span class="p">(</span><span class="n">cr</span><span class="p">,</span> <span class="n">package</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">models</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">pool</span><span class="o">.</span><span class="n">_init_modules</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">package</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">status</span><span class="p">[</span><span class="s">&#39;progress&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">index</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>主要是下面2句，</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span>    <span class="n">load_openerp_module</span><span class="p">(</span><span class="n">package</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">models</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">cr</span><span class="p">,</span> <span class="n">package</span><span class="p">)</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>先看 load_openerp_module</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">initialize_sys_path</span><span class="p">()</span>
+</span><span class='line'><span class="k">try</span><span class="p">:</span>
+</span><span class='line'>    <span class="n">mod_path</span> <span class="o">=</span> <span class="n">get_module_path</span><span class="p">(</span><span class="n">module_name</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">zip_mod_path</span> <span class="o">=</span> <span class="s">&#39;&#39;</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">mod_path</span> <span class="k">else</span> <span class="n">mod_path</span> <span class="o">+</span> <span class="s">&#39;.zip&#39;</span>
+</span><span class='line'>    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">zip_mod_path</span><span class="p">):</span>
+</span><span class='line'>        <span class="nb">__import__</span><span class="p">(</span><span class="s">&#39;openerp.addons.&#39;</span> <span class="o">+</span> <span class="n">module_name</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">else</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">zimp</span> <span class="o">=</span> <span class="n">zipimport</span><span class="o">.</span><span class="n">zipimporter</span><span class="p">(</span><span class="n">zip_mod_path</span><span class="p">)</span>
+</span><span class='line'>        <span class="n">zimp</span><span class="o">.</span><span class="n">load_module</span><span class="p">(</span><span class="n">module_name</span><span class="p">)</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>上面代码中 import 了一个模块。如果您看过 digitalsatori 校长的大作 <a href="http://shine-it.net/index.php/topic,5771.msg14289.html">OpenERP与Python 元编程</a>, 下面就涉及到元类了：</p>
+
+<p> import 的时候 就会调用元类的构造函数</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">attrs</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_register</span><span class="p">:</span>
+</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">_register</span> <span class="o">=</span> <span class="bp">True</span>
+</span><span class='line'>        <span class="nb">super</span><span class="p">(</span><span class="n">MetaModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">attrs</span><span class="p">)</span>
+</span><span class='line'>        <span class="k">return</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c"># The (OpenERP) module name can be in the `openerp.addons` namespace</span>
+</span><span class='line'>    <span class="c"># or not. For instance module `sale` can be imported as</span>
+</span><span class='line'>    <span class="c"># `openerp.addons.sale` (the good way) or `sale` (for backward</span>
+</span><span class='line'>    <span class="c"># compatibility).</span>
+</span><span class='line'>    <span class="n">module_parts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__module__</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">module_parts</span><span class="p">)</span> <span class="o">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">module_parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;openerp&#39;</span> <span class="ow">and</span> \
+</span><span class='line'>        <span class="n">module_parts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;addons&#39;</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">module_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__module__</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
+</span><span class='line'>    <span class="k">else</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">module_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__module__</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+</span><span class='line'>    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;_module&#39;</span><span class="p">):</span>
+</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">_module</span> <span class="o">=</span> <span class="n">module_name</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c"># Remember which models to instanciate for this module.</span>
+</span><span class='line'>    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_custom</span><span class="p">:</span>
+</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">module_to_models</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_module</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>上面的代码基本上就是将自身类加入到 module_to_models 字典中。</p>
+
+<p>然后我们来看pool.load
+<div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cr</span><span class="p">,</span> <span class="n">module</span><span class="p">):</span>
+</span><span class='line'>    <span class="sd">&quot;&quot;&quot; Load a given module in the registry.</span>
+</span><span class='line'>
+</span><span class='line'><span class="sd">    At the Python level, the modules are already loaded, but not yet on a</span>
+</span><span class='line'><span class="sd">    per-registry level. This method populates a registry with the given</span>
+</span><span class='line'><span class="sd">    modules, i.e. it instanciates all the classes of a the given module</span>
+</span><span class='line'><span class="sd">    and registers them in the registry.</span>
+</span><span class='line'>
+</span><span class='line'><span class="sd">    &quot;&quot;&quot;</span>
+</span><span class='line'>    <span class="n">models_to_load</span> <span class="o">=</span> <span class="p">[]</span> <span class="c"># need to preserve loading order</span>
+</span><span class='line'>    <span class="c"># Instantiate registered classes (via the MetaModel automatic discovery</span>
+</span><span class='line'>    <span class="c"># or via explicit constructor call), and add them to the pool.</span>
+</span><span class='line'>    <span class="k">for</span> <span class="n">cls</span> <span class="ow">in</span> <span class="n">openerp</span><span class="o">.</span><span class="n">osv</span><span class="o">.</span><span class="n">orm</span><span class="o">.</span><span class="n">MetaModel</span><span class="o">.</span><span class="n">module_to_models</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">module</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="p">[]):</span>
+</span><span class='line'>        <span class="c"># models register themselves in self.models</span>
+</span><span class='line'>        <span class="n">model</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">create_instance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cr</span><span class="p">)</span>
+</span><span class='line'>        <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">models_to_load</span><span class="p">:</span>
+</span><span class='line'>            <span class="c"># avoid double-loading models whose declaration is split</span>
+</span><span class='line'>            <span class="n">models_to_load</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">models_to_load</span><span class="p">]</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>这里我们可以看到 MetaModel 的身影，cls.create_instance(self, cr) 这里就是动态构造对象的核心代码。</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+<span class='line-number'>73</span>
+<span class='line-number'>74</span>
+<span class='line-number'>75</span>
+<span class='line-number'>76</span>
+<span class='line-number'>77</span>
+<span class='line-number'>78</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span>    <span class="n">parent_names</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="s">&#39;_inherit&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+</span><span class='line'>    <span class="c"># 判断是否有继承父类 </span>
+</span><span class='line'>    <span class="k">if</span> <span class="n">parent_names</span><span class="p">:</span>
+</span><span class='line'>        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">parent_names</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">unicode</span><span class="p">)):</span>
+</span><span class='line'>            <span class="n">name</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">_name</span> <span class="ow">or</span> <span class="n">parent_names</span>
+</span><span class='line'>            <span class="n">parent_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">parent_names</span><span class="p">]</span>
+</span><span class='line'>        <span class="k">else</span><span class="p">:</span>
+</span><span class='line'>            <span class="n">name</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">_name</span>
+</span><span class='line'>        <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span><span class="p">:</span>
+</span><span class='line'>            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&#39;_name is mandatory in case of multiple inheritance&#39;</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="k">for</span> <span class="n">parent_name</span> <span class="ow">in</span> <span class="p">((</span><span class="nb">type</span><span class="p">(</span><span class="n">parent_names</span><span class="p">)</span><span class="o">==</span><span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="n">parent_names</span> <span class="ow">or</span> <span class="p">[</span><span class="n">parent_names</span><span class="p">]):</span>
+</span><span class='line'>            <span class="c"># 读取父类</span>
+</span><span class='line'>            <span class="n">parent_model</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">parent_name</span><span class="p">)</span>
+</span><span class='line'>            <span class="k">if</span> <span class="ow">not</span> <span class="n">parent_model</span><span class="p">:</span>
+</span><span class='line'>                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&#39;The model &quot;</span><span class="si">%s</span><span class="s">&quot; specifies an unexisting parent class &quot;</span><span class="si">%s</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&#39;</span>
+</span><span class='line'>                    <span class="s">&#39;You may need to add a dependency on the parent class</span><span class="se">\&#39;</span><span class="s"> module.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">parent_name</span><span class="p">))</span>
+</span><span class='line'>            <span class="k">if</span> <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="s">&#39;_original_module&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span> <span class="ow">and</span> <span class="n">name</span> <span class="o">==</span> <span class="n">parent_model</span><span class="o">.</span><span class="n">_name</span><span class="p">:</span>
+</span><span class='line'>                <span class="n">cls</span><span class="o">.</span><span class="n">_original_module</span> <span class="o">=</span> <span class="n">parent_model</span><span class="o">.</span><span class="n">_original_module</span>
+</span><span class='line'>            <span class="n">parent_class</span> <span class="o">=</span> <span class="n">parent_model</span><span class="o">.</span><span class="n">__class__</span>
+</span><span class='line'>            <span class="n">nattr</span> <span class="o">=</span> <span class="p">{}</span>
+</span><span class='line'>            <span class="c"># 复制父类属性</span>
+</span><span class='line'>            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">attributes</span><span class="p">:</span>
+</span><span class='line'>                <span class="n">new</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">parent_model</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="p">{}))</span>
+</span><span class='line'>                <span class="k">if</span> <span class="n">s</span> <span class="o">==</span> <span class="s">&#39;_columns&#39;</span><span class="p">:</span>
+</span><span class='line'>                    <span class="c"># Don&#39;t _inherit custom fields.</span>
+</span><span class='line'>                    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">new</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+</span><span class='line'>                        <span class="k">if</span> <span class="n">new</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">manual</span><span class="p">:</span>
+</span><span class='line'>                            <span class="k">del</span> <span class="n">new</span><span class="p">[</span><span class="n">c</span><span class="p">]</span>
+</span><span class='line'>                    <span class="c"># Duplicate float fields because they have a .digits</span>
+</span><span class='line'>                    <span class="c"># cache (which must be per-registry, not server-wide).</span>
+</span><span class='line'>                    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">new</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+</span><span class='line'>                        <span class="k">if</span> <span class="n">new</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">_type</span> <span class="o">==</span> <span class="s">&#39;float&#39;</span><span class="p">:</span>
+</span><span class='line'>                            <span class="n">new</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">new</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
+</span><span class='line'>                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">new</span><span class="p">,</span> <span class="s">&#39;update&#39;</span><span class="p">):</span>
+</span><span class='line'>                    <span class="n">new</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="p">{}))</span>
+</span><span class='line'>                <span class="k">elif</span> <span class="n">s</span><span class="o">==</span><span class="s">&#39;_constraints&#39;</span><span class="p">:</span>
+</span><span class='line'>                    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="p">[]):</span>
+</span><span class='line'>                        <span class="n">exist</span> <span class="o">=</span> <span class="bp">False</span>
+</span><span class='line'>                        <span class="k">for</span> <span class="n">c2</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">new</span><span class="p">)):</span>
+</span><span class='line'>                            <span class="c">#For _constraints, we should check field and methods as well</span>
+</span><span class='line'>                            <span class="k">if</span> <span class="n">new</span><span class="p">[</span><span class="n">c2</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span><span class="o">==</span><span class="n">c</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="ow">and</span> <span class="p">(</span><span class="n">new</span><span class="p">[</span><span class="n">c2</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> \
+</span><span class='line'>                                    <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">new</span><span class="p">[</span><span class="n">c2</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span><span class="s">&#39;__name__&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span> <span class="o">==</span> \
+</span><span class='line'>                                        <span class="nb">getattr</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="s">&#39;__name__&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)):</span>
+</span><span class='line'>                                <span class="c"># If new class defines a constraint with</span>
+</span><span class='line'>                                <span class="c"># same function name, we let it override</span>
+</span><span class='line'>                                <span class="c"># the old one.</span>
+</span><span class='line'>
+</span><span class='line'>                                <span class="n">new</span><span class="p">[</span><span class="n">c2</span><span class="p">]</span> <span class="o">=</span> <span class="n">c</span>
+</span><span class='line'>                                <span class="n">exist</span> <span class="o">=</span> <span class="bp">True</span>
+</span><span class='line'>                                <span class="k">break</span>
+</span><span class='line'>                        <span class="k">if</span> <span class="ow">not</span> <span class="n">exist</span><span class="p">:</span>
+</span><span class='line'>                            <span class="n">new</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+</span><span class='line'>                <span class="k">else</span><span class="p">:</span>
+</span><span class='line'>                    <span class="n">new</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">cls</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="p">[]))</span>
+</span><span class='line'>                <span class="n">nattr</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">new</span>
+</span><span class='line'>
+</span><span class='line'>            <span class="c"># Keep links to non-inherited constraints, e.g. useful when exporting translations</span>
+</span><span class='line'>            <span class="n">nattr</span><span class="p">[</span><span class="s">&#39;_local_constraints&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;_constraints&#39;</span><span class="p">,</span> <span class="p">[])</span>
+</span><span class='line'>            <span class="n">nattr</span><span class="p">[</span><span class="s">&#39;_local_sql_constraints&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;_sql_constraints&#39;</span><span class="p">,</span> <span class="p">[])</span>
+</span><span class='line'>            <span class="c"># 调用元类构造函数</span>
+</span><span class='line'>            <span class="n">cls</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">parent_class</span><span class="p">),</span> <span class="nb">dict</span><span class="p">(</span><span class="n">nattr</span><span class="p">,</span> <span class="n">_register</span><span class="o">=</span><span class="bp">False</span><span class="p">))</span>
+</span><span class='line'>    <span class="k">else</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">cls</span><span class="o">.</span><span class="n">_local_constraints</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="s">&#39;_constraints&#39;</span><span class="p">,</span> <span class="p">[])</span>
+</span><span class='line'>        <span class="n">cls</span><span class="o">.</span><span class="n">_local_sql_constraints</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="s">&#39;_sql_constraints&#39;</span><span class="p">,</span> <span class="p">[])</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">if</span> <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="s">&#39;_original_module&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">):</span>
+</span><span class='line'>        <span class="n">cls</span><span class="o">.</span><span class="n">_original_module</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">_module</span>
+</span><span class='line'>    <span class="c"># 构造对象</span>
+</span><span class='line'>    <span class="n">obj</span> <span class="o">=</span> <span class="nb">object</span><span class="o">.</span><span class="n">__new__</span><span class="p">(</span><span class="n">cls</span><span class="p">)</span>
+</span><span class='line'>    <span class="c"># 初始化对象</span>
+</span><span class='line'>    <span class="n">obj</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">pool</span><span class="p">,</span> <span class="n">cr</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">obj</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>上面代码很重要，可以看到首先是判断该对象是否有继承父类，如果没有就直接构造，和动态没有什么关系。</p>
+
+<p>如果有继承父类, 就复制父类属性, 这里就是动态构建类的做法。</p>
+
+<p>假如有不同模块，都继承了同一个父类，那么如何保证类成员和属性是否加载完整或覆盖呢？ 答案在于这句代码：</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span>            <span class="n">parent_model</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">parent_name</span><span class="p">)</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>Registry.get 的定义
+<div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_name</span><span class="p">):</span>
+</span><span class='line'>    <span class="sd">&quot;&quot;&quot; Return a model for a given name or None if it doesn&#39;t exist.&quot;&quot;&quot;</span>
+</span><span class='line'>    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">model_name</span><span class="p">)</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>最后看看obj.<strong>init</strong>(pool, cr)初始化对象，做了什么动作？
+<div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pool</span><span class="p">,</span> <span class="n">cr</span><span class="p">):</span>
+</span><span class='line'>    <span class="sd">&quot;&quot;&quot; Initialize a model and make it part of the given registry.</span>
+</span><span class='line'>
+</span><span class='line'><span class="sd">    - copy the stored fields&#39; functions in the osv_pool,</span>
+</span><span class='line'><span class="sd">    - update the _columns with the fields found in ir_model_fields,</span>
+</span><span class='line'><span class="sd">    - ensure there is a many2one for each _inherits&#39;d parent,</span>
+</span><span class='line'><span class="sd">    - update the children&#39;s _columns,</span>
+</span><span class='line'><span class="sd">    - give a chance to each field to initialize itself.</span>
+</span><span class='line'>
+</span><span class='line'><span class="sd">    &quot;&quot;&quot;</span>
+</span><span class='line'>    <span class="n">pool</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+</span><span class='line'>    <span class="bp">self</span><span class="o">.</span><span class="n">pool</span> <span class="o">=</span> <span class="n">pool</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>pool.add(self._name, self) 定义如下：
+<div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+</span><span class='line'>    <span class="sd">&quot;&quot;&quot; Add or replace a model in the registry.&quot;&quot;&quot;</span>
+</span><span class='line'>    <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="n">model_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">model</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>到这里应该很非常清楚，Registry.models 保存了对象的 model 信息。这样多个对象继承同一父类时，按照加载顺序先后动态构建相关的类。</p>
+
+<p>至此，OpenERP 启动时动态加载模块分析完成。如模块安装、升级、卸载等, 则是通过 signal_registry_change 和 check_registry_signaling 处理，重新载入 Registry, 然后重新构建 OpenERP 对象。</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Openerp Web PDF Report Preview &amp; Print 模块升级至 7.0]]></title>
@@ -359,37 +1160,6 @@
 <p>祝你好运 ~</p>
 
 <p><img src="/images/my/oe-pychart-report.jpg"></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[开源模块 Openerp Web PDF Report Preview & Print 简介]]></title>
-    <link href="http://buke.github.com/blog/2012/08/02/openerp-web-pdf-report-preview-and-print/"/>
-    <updated>2012-08-02T15:32:00+08:00</updated>
-    <id>http://buke.github.com/blog/2012/08/02/openerp-web-pdf-report-preview-and-print</id>
-    <content type="html"><![CDATA[<p>Openerp Web PDF Report Preview &amp; Print</p>
-
-<p>下载地址： https://github.com/buke/openerp-web-pdf-preview-print</p>
-
-<p>openerp 官方app下载 ：  http://apps.openerp.com/addon/7941</p>
-
-<p>简介:</p>
-
-<p>将OpenERP 的PDF报表打印下载功能，改为直接在浏览器中预览打印。</p>
-
-<p>For IE， 需要安装 Adobe Reader。</p>
-
-<p>For Firefox ,需要安装 Adobe Reader。</p>
-
-<p>For Chrome, 神马都不用安装。</p>
-
-<p>以上在windows 上测试通过。如果浏览器阻止了弹出窗口，请点允许弹出窗口。</p>
-
-<p>系统要求：</p>
-
-<p>OpenERP 6.1</p>
-
-<p><img src="/images/my/oe-pdf-print.jpg"></p>
 ]]></content>
   </entry>
   

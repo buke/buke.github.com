@@ -4,7 +4,7 @@
   <title><![CDATA[Category: OpenERP | 步科 的博客]]></title>
   <link href="http://buke.github.com/blog/categories/openerp/atom.xml" rel="self"/>
   <link href="http://buke.github.com/"/>
-  <updated>2013-02-26T19:36:03+08:00</updated>
+  <updated>2013-02-26T19:37:10+08:00</updated>
   <id>http://buke.github.com/</id>
   <author>
     <name><![CDATA[步科]]></name>
@@ -14,7 +14,7 @@
 
   
   <entry>
-    <title type="html"><![CDATA[OpenERP 模块动态加载原理及启动分析]]></title>
+    <title type="html"><![CDATA[OpenERP 模块动态加载原理及启动代码分析]]></title>
     <link href="http://buke.github.com/blog/2013/02/26/openerp-dynamic-loading-and-booting-way/"/>
     <updated>2013-02-26T15:48:00+08:00</updated>
     <id>http://buke.github.com/blog/2013/02/26/openerp-dynamic-loading-and-booting-way</id>

@@ -3,7 +3,7 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<title>OpenERP 模块动态加载原理及启动分析 - 步科 的博客</title>
+	<title>OpenERP 模块动态加载原理及启动代码分析 - 步科 的博客</title>
 	<meta name="author" content="步科">
 
 	
@@ -76,7 +76,7 @@
 		
 	
 	<div id="content" class="inner"><article class="post">
-	<h2 class="title">OpenERP 模块动态加载原理及启动分析</h2>
+	<h2 class="title">OpenERP 模块动态加载原理及启动代码分析</h2>
 	<div class="entry-content"><p>一般来说我们在编程中，对象定义都是预先定义好的。一些 OOP 语言（包括 Python/Java）允许对象是 自省的（也称为 反射）。即，自省对象能够描述自己：实例属于哪个类？类有哪些祖先？对象可以用哪些方法和属性？自省让处理对象的函数或方法根据传递给函数或方法的对象类型来做决定。即允许对象在运行时动态改变方法成员等属性。</p>
 
 <p>得益于OpenERP ORM 模型的精巧设计，实际上 OpenERP 运行时也是动态读取模块信息并动态构建对象的。如在模块开发中，继承了 &#8216;res.users&#8217;, 新增一个方法或新增一个字段。在OpenERP 导入该模块后， OpenERP 会马上重构 &#8216;res.users&#8217; 对象并将新增的方法或字段添加到该对象。那么，OpenERP 是如何做到这点的呢？ 让我们从OpenERP 的启动部分开始分析：</p>

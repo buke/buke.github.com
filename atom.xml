@@ -4,7 +4,7 @@
   <title><![CDATA[步科 的博客]]></title>
   <link href="http://buke.github.com/atom.xml" rel="self"/>
   <link href="http://buke.github.com/"/>
-  <updated>2013-02-27T17:03:45+08:00</updated>
+  <updated>2013-03-10T21:58:25+08:00</updated>
   <id>http://buke.github.com/</id>
   <author>
     <name><![CDATA[步科]]></name>
@@ -12,6 +12,46 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[GreenOpenERP -- 绿色版 OpenERP]]></title>
+    <link href="http://buke.github.com/blog/2013/03/10/greenopenerp-portable-openerp-for-windows/"/>
+    <updated>2013-03-10T21:43:00+08:00</updated>
+    <id>http://buke.github.com/blog/2013/03/10/greenopenerp-portable-openerp-for-windows</id>
+    <content type="html"><![CDATA[<p>OpenERP 绿色版，源码运行，集成 python/postgresql/openerp。</p>
+
+<h2>软件版本</h2>
+
+<ul>
+<li>OpenERP=7.0-20130309-002120 (OpenERP 版本不定时更新, 看博主心情 :P )</li>
+<li>Python=2.7.3</li>
+<li>Postgresql=9.2.3</li>
+</ul>
+
+
+<h2>用法</h2>
+
+<p>下载解压ZIP文件，然后运行 *.bat 批处理文件即可。（注意文件路径：不能含有中文等非西文字符）</p>
+
+<h2>执行脚本</h2>
+
+<ul>
+<li>start.bat &#8211; 运行 Postgresql 和 Openerp</li>
+<li>start-hide.bat &#8211; 隐藏命令行窗口，运行Postgresql 和 Openerp</li>
+<li>stop.bat &#8211; 停止 Postgresql 和 Openerp</li>
+<li>bin/pgAdmin3.exe &#8211; 运行 start.bat 之后，可以运行 pgAdmin 管理PG</li>
+</ul>
+
+
+<h2>下载地址</h2>
+
+<p><a href="http://sourceforge.net/projects/greenopenerp/files/">http://sourceforge.net/projects/greenopenerp/files/</a></p>
+
+<p>作者: wangbuke <a href="&#109;&#x61;&#x69;&#108;&#116;&#111;&#x3a;&#x77;&#97;&#110;&#103;&#x62;&#117;&#x6b;&#x65;&#x40;&#103;&#109;&#x61;&#x69;&#x6c;&#x2e;&#x63;&#x6f;&#x6d;">&#x77;&#97;&#110;&#103;&#x62;&#x75;&#107;&#101;&#64;&#103;&#109;&#97;&#x69;&#x6c;&#x2e;&#x63;&#x6f;&#109;</a></p>
+
+<p>博客: http://buke.github.com/</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[OpenERP 模块动态加载原理及启动代码分析]]></title>

@@ -8,7 +8,9 @@
     <meta name="google-site-verification" content="bFYi4ujLMuKmCNqh1lb0azIHJGV9rJwfmq--XRbo_tw" />
 
 	
-	<meta name="description" content="一般来说我们在编程中，对象定义都是预先定义好的。一些 OOP 语言（包括 Python/Java）允许对象是 自省的（也称为 反射）。即，自省对象能够描述自己：实例属于哪个类？类有哪些祖先？对象可以用哪些方法和属性？自省让处理对象的函数或方法根据传递给函数或方法的对象类型来做决定。 &hellip;">
+	<meta name="description" content="OpenERP 绿色版，源码运行，集成 python/postgresql/openerp。 软件版本 OpenERP=7.0-20130309-002120 (OpenERP 版本不定时更新, 看博主心情 :P )
+Python=2.7.3
+Postgresql=9.2.3 用法 &hellip;">
 	
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
@@ -90,6 +92,77 @@
 		
 	
 	<div id="content" class="inner">
+
+
+    <article class="post">
+	<h2 class="title">
+		
+		<a href="/blog/2013/03/10/greenopenerp-portable-openerp-for-windows/">
+		
+			GreenOpenERP &#8211; 绿色版 OpenERP</a>
+	</h2>
+	<div class="entry-content">
+		<p>OpenERP 绿色版，源码运行，集成 python/postgresql/openerp。</p>
+
+<h2>软件版本</h2>
+
+<ul>
+<li>OpenERP=7.0-20130309-002120 (OpenERP 版本不定时更新, 看博主心情 :P )</li>
+<li>Python=2.7.3</li>
+<li>Postgresql=9.2.3</li>
+</ul>
+
+
+<h2>用法</h2>
+
+<p>下载解压ZIP文件，然后运行 *.bat 批处理文件即可。（注意文件路径：不能含有中文等非西文字符）</p>
+
+<h2>执行脚本</h2>
+
+<ul>
+<li>start.bat &#8211; 运行 Postgresql 和 Openerp</li>
+<li>start-hide.bat &#8211; 隐藏命令行窗口，运行Postgresql 和 Openerp</li>
+<li>stop.bat &#8211; 停止 Postgresql 和 Openerp</li>
+<li>bin/pgAdmin3.exe &#8211; 运行 start.bat 之后，可以运行 pgAdmin 管理PG</li>
+</ul>
+
+
+<h2>下载地址</h2>
+
+<p><a href="http://sourceforge.net/projects/greenopenerp/files/">http://sourceforge.net/projects/greenopenerp/files/</a></p>
+
+<p>作者: wangbuke <a href="&#109;&#x61;&#x69;&#108;&#116;&#111;&#x3a;&#x77;&#97;&#110;&#103;&#x62;&#117;&#x6b;&#x65;&#x40;&#103;&#109;&#x61;&#x69;&#x6c;&#x2e;&#x63;&#x6f;&#x6d;">&#x77;&#97;&#110;&#103;&#x62;&#x75;&#107;&#101;&#64;&#103;&#109;&#97;&#x69;&#x6c;&#x2e;&#x63;&#x6f;&#109;</a></p>
+
+<p>博客: http://buke.github.com/</p>
+
+		
+		
+	</div>
+
+
+<div class="meta">
+	<div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-03-10T21:43:00+08:00" pubdate data-updated="true">Mar 10<span>th</span>, 2013</time></div>
+	<div class="tags">
+
+</div>
+	
+
+	<span class="comments"><a id="uyan_count_unit" href="/blog/2013/03/10/greenopenerp-portable-openerp-for-windows/#uyan_frame">0条评论</a><script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=1743843"></script></span>
+
+</div>
+</article>
 
 
     <article class="post">
@@ -1837,147 +1910,10 @@
 </div>
 </article>
 
-
-    <article class="post">
-	<h2 class="title">
-		
-		<a href="/blog/2012/07/16/user-supervisor-manager-openerp/">
-		
-			Linux 下使用 Supervisor 管理源码启动的 OpenERP</a>
-	</h2>
-	<div class="entry-content">
-		<p>从源码启动openerp，简单的做法是添加启动脚本到/etc/init.d/rc.local等，让openerp 随系统启动而运行。此类方法只在系统启动时运行，但万一程序在运行中崩溃，您可能要等到用户发现不能使用了，才去重启服务器。下面请出今天的主角： supervisor   ( http://supervisord.org/)</p>
-
-<p>Supervisor 是什么？</p>
-
-<p>Supervisor is a client/server system that allows its users to monitor and control a number of processes on UNIX-like operating systems.
-Supervisor 是一个客户端/服务器系统，允许用户监控和控制类 Unix 操作系统上的进程数。</p>
-
-<h2>1、安装</h2>
-
-<p>debian/ubuntu</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>apt-get install supervisor</span></code></pre></td></tr></table></div></figure>
-
-
-<p>redhat/centos</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>yum install supervisor</span></code></pre></td></tr></table></div></figure>
-
-
-<h2>2、建立openerp 的配置文件</h2>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'># touch /etc/supervisor/conf.d/openerp.conf
-</span><span class='line'># vi /etc/supervisor/conf.d/openerp.conf</span></code></pre></td></tr></table></div></figure>
-
-
-<p>openerp.conf 内容</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>[program:openerp]
-</span><span class='line'>; openerp 启动脚本
-</span><span class='line'>command=python /var/www/openerp-6.1-1/openerp-server -c /var/www/openerp-6.1-1/openerp-server.conf
-</span><span class='line'>; openerp 目录
-</span><span class='line'>directory=/var/www/openerp-6.1-1/
-</span><span class='line'>; 是否随系统启动
-</span><span class='line'>autostart=true
-</span><span class='line'>; 自动重启
-</span><span class='line'>autorestart=true
-</span><span class='line'>; 启动时间，如果超过这个时间oe还没有挂，则视为已经启动
-</span><span class='line'>startsecs=3
-</span><span class='line'>; 启动用户
-</span><span class='line'>user=www-data
-</span><span class='line'>redirect_stderr=true
-</span><span class='line'>; log 文件
-</span><span class='line'>stdout_logfile=/var/www/openerp-6.1-1/openerp-server.log
-</span><span class='line'>stdout_logfile_maxbytes=500MB
-</span><span class='line'>stdout_logfile_backups=50
-</span><span class='line'>stdout_capture_maxbytes=1MB
-</span><span class='line'>stdout_events_enabled=false
-</span><span class='line'>loglevel=warn</span></code></pre></td></tr></table></div></figure>
-
-
-<h2>3、 完成！</h2>
-
-<p>重启系统试试看openerp 是否已经启动。也可以想办法把openerp 搞崩溃，试试supervisor 能不能及时将openerp 重启</p>
-
-<h2>4、 常用命令</h2>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'># supervisorctl 
-</span><span class='line'>openerp                          RUNNING    pid 9454, uptime 4:43:34
-</span><span class='line'>supervisor> start openerp  #启动
-</span><span class='line'>supervisor> stop openerp   #停止
-</span><span class='line'>supervisor> restart openerp #重启
-</span><span class='line'>supervisor> status openerp #查看状态</span></code></pre></td></tr></table></div></figure>
-
-
-
-
-		
-		
-	</div>
-
-
-<div class="meta">
-	<div class="date">
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-07-16T22:50:00+08:00" pubdate data-updated="true">Jul 16<span>th</span>, 2012</time></div>
-	<div class="tags">
-
-
-	<a class='category' href='/blog/categories/openerp/'>OpenERP</a>
-
-
-</div>
-	
-
-	<span class="comments"><a id="uyan_count_unit" href="/blog/2012/07/16/user-supervisor-manager-openerp/#uyan_frame">0条评论</a><script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=1743843"></script></span>
-
-</div>
-</article>
-
 <nav id="pagenavi">
     
+    
+        <a href="/blog/page/2/" class="next">Next</a>
     
     <div class="center"><a href="/blog/archives">Blog Archives</a></div>
 </nav></div>

@@ -4,7 +4,7 @@
   <title><![CDATA[Category: OpenERP | 步科 的博客]]></title>
   <link href="http://buke.github.com/blog/categories/openerp/atom.xml" rel="self"/>
   <link href="http://buke.github.com/"/>
-  <updated>2013-03-10T21:58:25+08:00</updated>
+  <updated>2013-03-11T00:23:33+08:00</updated>
   <id>http://buke.github.com/</id>
   <author>
     <name><![CDATA[步科]]></name>
@@ -12,6 +12,46 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[GreenOpenERP -- 绿色版 OpenERP]]></title>
+    <link href="http://buke.github.com/blog/2013/03/10/greenopenerp-portable-openerp-for-windows/"/>
+    <updated>2013-03-10T21:43:00+08:00</updated>
+    <id>http://buke.github.com/blog/2013/03/10/greenopenerp-portable-openerp-for-windows</id>
+    <content type="html"><![CDATA[<p>OpenERP 绿色版，源码运行，集成 python/postgresql/openerp。</p>
+
+<h2>软件版本</h2>
+
+<ul>
+<li>OpenERP=7.0-20130309-002120 (OpenERP 版本不定时更新, 看博主心情 :P )</li>
+<li>Python=2.7.3</li>
+<li>Postgresql=9.2.3</li>
+</ul>
+
+
+<h2>用法</h2>
+
+<p>下载解压ZIP文件，然后运行 *.bat 批处理文件即可。（注意文件路径：不能含有中文等非西文字符）</p>
+
+<h2>执行脚本</h2>
+
+<ul>
+<li>start.bat -- 运行 Postgresql 和 Openerp</li>
+<li>start-hide.bat -- 隐藏命令行窗口，运行Postgresql 和 Openerp</li>
+<li>stop.bat -- 停止 Postgresql 和 Openerp</li>
+<li>bin/pgAdmin3.exe -- 运行 start.bat 之后，可以运行 pgAdmin 管理PG</li>
+</ul>
+
+
+<h2>下载地址</h2>
+
+<p><a href="http://sourceforge.net/projects/greenopenerp/files/">http://sourceforge.net/projects/greenopenerp/files/</a></p>
+
+<p>作者: wangbuke <a href="&#x6d;&#97;&#x69;&#x6c;&#116;&#x6f;&#58;&#x77;&#x61;&#x6e;&#103;&#x62;&#117;&#x6b;&#101;&#x40;&#x67;&#109;&#x61;&#x69;&#x6c;&#46;&#x63;&#x6f;&#109;">&#119;&#x61;&#110;&#103;&#x62;&#117;&#x6b;&#101;&#x40;&#x67;&#109;&#97;&#x69;&#x6c;&#x2e;&#x63;&#x6f;&#109;</a></p>
+
+<p>博客: http://buke.github.com/</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[OpenERP 模块动态加载原理及启动代码分析]]></title>
@@ -1103,55 +1143,6 @@
 <p>python chardet (本模块已内含chardet-1.1。如果系统安装了新版本，则使用您安装的新版本.)</p>
 
 <p><img src="/images/my/oe-chardet.jpg"></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[OpenERP PyChart 中文报表模块（支持CJK语言）]]></title>
-    <link href="http://buke.github.com/blog/2012/08/19/openerp-pychart-unicode-report/"/>
-    <updated>2012-08-19T15:44:00+08:00</updated>
-    <id>http://buke.github.com/blog/2012/08/19/openerp-pychart-unicode-report</id>
-    <content type="html"><![CDATA[<p>OpenERP PyChart Unicode Report (Support CJK Font)</p>
-
-<p>作者：wangbuke@gmail.com</p>
-
-<p>源码托管地址：https://github.com/buke/openerp-pychart-unicode-report</p>
-
-<p>OpenERP 官方APP下载地址： http://apps.openerp.com/addon/8009</p>
-
-<p>支持pychart中文报表，如“库存预测”、“工作中心负载” 等报表。</p>
-
-<h1>模块原理</h1>
-
-<p>让pychart 生成svg 文件，然后用cairosvg 模块生成PDF报表。</p>
-
-<h1>依赖模块</h1>
-
-<p>python-cairo python-cairosvg</p>
-
-<p>Debian/Ubuntu安装方法： $ su apt-get install python-cairo python-cairosvg</p>
-
-<h1>安装与设置</h1>
-
-<h2>1、安装字体</h2>
-
-<p>复制您所用的字体文件，如simsun.ttc 到系统目录下。</p>
-
-<p>debian/ubuntu: $ sudo cp simsun.ttc /usr/share/fonts</p>
-
-<p>windows :  C:> copy simsun.ttc  c:/windows/fonts</p>
-
-<h3>2、配置pychart 报表字体 默认使用宋体</h3>
-
-<p>修改openerp 配置文件 openerp-server.conf , 添加以下参数：</p>
-
-<p>pychart_ttfont_name = Simsun</p>
-
-<p>注：默认是宋体，如使用默认值则无需修改 conf 文件</p>
-
-<p>祝你好运 ~</p>
-
-<p><img src="/images/my/oe-pychart-report.jpg"></p>
 ]]></content>
   </entry>
   

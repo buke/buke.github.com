@@ -2,53 +2,57 @@
 <urlset xmlns='http://www.sitemaps.org/schemas/sitemap/0.9'>
     <url>
         <loc>http://buke.github.com/blog/2012/07/16/user-supervisor-manager-openerp/</loc>
-        <lastmod>2013-02-21T17:36:26+08:00</lastmod>
+        <lastmod>2013-03-18T17:15:37+08:00</lastmod>
     </url>
     <url>
         <loc>http://buke.github.com/blog/2012/07/17/use-nginx-upstream-deploy-openerp/</loc>
-        <lastmod>2013-02-21T17:36:26+08:00</lastmod>
+        <lastmod>2013-03-18T17:15:37+08:00</lastmod>
     </url>
     <url>
         <loc>http://buke.github.com/blog/2012/07/18/taobao-openerp-connector/</loc>
-        <lastmod>2013-02-21T19:50:35+08:00</lastmod>
+        <lastmod>2013-03-18T17:15:37+08:00</lastmod>
     </url>
     <url>
         <loc>
             http://buke.github.com/blog/2012/08/02/openerp-web-pdf-report-preview-and-print/
         </loc>
-        <lastmod>2013-02-21T17:36:26+08:00</lastmod>
+        <lastmod>2013-03-18T17:15:37+08:00</lastmod>
     </url>
     <url>
         <loc>http://buke.github.com/blog/2012/08/19/openerp-pychart-unicode-report/</loc>
-        <lastmod>2013-02-21T17:36:26+08:00</lastmod>
+        <lastmod>2013-03-18T17:15:37+08:00</lastmod>
     </url>
     <url>
         <loc>http://buke.github.com/blog/2012/09/05/openerp-web-import-chardet/</loc>
-        <lastmod>2013-02-21T17:36:26+08:00</lastmod>
+        <lastmod>2013-03-18T17:15:37+08:00</lastmod>
     </url>
     <url>
         <loc>http://buke.github.com/blog/2013/01/21/openerp-load-balance/</loc>
-        <lastmod>2013-02-21T17:36:26+08:00</lastmod>
+        <lastmod>2013-03-18T17:15:37+08:00</lastmod>
     </url>
     <url>
         <loc>http://buke.github.com/blog/2013/01/28/trytons-name-and-myth-introdution/</loc>
-        <lastmod>2013-02-21T17:36:26+08:00</lastmod>
+        <lastmod>2013-03-18T17:15:37+08:00</lastmod>
     </url>
     <url>
         <loc>
             http://buke.github.com/blog/2013/02/22/openerp-web-pdf-report-preview-and-print-update-7-dot-0/
         </loc>
-        <lastmod>2013-02-22T19:38:42+08:00</lastmod>
+        <lastmod>2013-03-18T17:15:37+08:00</lastmod>
     </url>
     <url>
         <loc>http://buke.github.com/blog/2013/02/26/openerp-dynamic-loading-and-booting-way/</loc>
-        <lastmod>2013-02-26T22:58:54+08:00</lastmod>
+        <lastmod>2013-03-18T17:15:37+08:00</lastmod>
     </url>
     <url>
         <loc>
             http://buke.github.com/blog/2013/03/10/greenopenerp-portable-openerp-for-windows/
         </loc>
-        <lastmod>2013-03-14T15:15:32+08:00</lastmod>
+        <lastmod>2013-03-18T17:15:37+08:00</lastmod>
+    </url>
+    <url>
+        <loc>http://buke.github.com/projects/</loc>
+        <lastmod>2013-03-18T17:21:18+08:00</lastmod>
     </url>
     <url>
         <loc>http://buke.github.com/blog/archives/</loc>
@@ -56,7 +60,7 @@
     </url>
     <url>
         <loc>http://buke.github.com/about/</loc>
-        <lastmod>2013-02-21T19:58:19+08:00</lastmod>
+        <lastmod>2013-03-18T17:21:18+08:00</lastmod>
     </url>
     <url>
         <loc>http://buke.github.com/robots.txt</loc>

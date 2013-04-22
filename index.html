@@ -8,9 +8,18 @@
     <meta name="google-site-verification" content="bFYi4ujLMuKmCNqh1lb0azIHJGV9rJwfmq--XRbo_tw" />
 
 	
-	<meta name="description" content="OpenERP 绿色版 For Windows，源码运行，解压即用，集成 python/postgresql/openerp。 软件版本 OpenERP (OpenERP 版本不定时更新, 看博主心情 :P )
-Python=2.7.3
-Postgresql=9.2.3 用法 下载解压ZIP文件 &hellip;">
+	<meta name="description" content="OpenERP 使用 postgresql 存储过程和试图，步骤如下： STEP1: 在模块的 init 函数中定义存储过程 1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12 def init(self, cr): &#39;&#39;&#39; create stored &hellip;">
 	
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
@@ -99,6 +108,163 @@ Postgresql=9.2.3 用法 下载解压ZIP文件 &hellip;">
     <article class="post">
 	<h2 class="title">
 		
+		<a href="/blog/2013/04/22/openerp-postgresql-stored-procedure-and-view/">
+		
+			Openerp 使用 Postgresql 存储过程和视图</a>
+	</h2>
+	<div class="entry-content">
+		<p>OpenERP 使用 postgresql 存储过程和试图，步骤如下：</p>
+
+<p>STEP1: 在模块的 init 函数中定义存储过程</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'>    <span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cr</span><span class="p">):</span>
+</span><span class='line'>        <span class="sd">&#39;&#39;&#39; create stored procedure &#39;&#39;&#39;</span>
+</span><span class='line'>        <span class="n">cr</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;&quot;&quot;CREATE OR REPLACE FUNCTION fn_fi_report_childs(int)</span>
+</span><span class='line'><span class="s">        RETURNS TABLE(id int) AS $$</span>
+</span><span class='line'><span class="s">            WITH RECURSIVE t AS (</span>
+</span><span class='line'><span class="s">                SELECT id,parent_id  FROM fi_report WHERE id = $1</span>
+</span><span class='line'><span class="s">              UNION ALL</span>
+</span><span class='line'><span class="s">                SELECT fi_report.id, fi_report.parent_id FROM fi_report, t WHERE fi_report.parent_id = t.id</span>
+</span><span class='line'><span class="s">            )</span>
+</span><span class='line'><span class="s">            SELECT id FROM t;</span>
+</span><span class='line'><span class="s">        $$ LANGUAGE SQL</span>
+</span><span class='line'><span class="s">            &quot;&quot;&quot;</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>或者定义视图</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'>    <span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cr</span><span class="p">):</span>
+</span><span class='line'>        <span class="n">tools</span><span class="o">.</span><span class="n">drop_view_if_exists</span><span class="p">(</span><span class="n">cr</span><span class="p">,</span> <span class="s">&#39;analytic_entries_report&#39;</span><span class="p">)</span>
+</span><span class='line'>        <span class="n">cr</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;&quot;&quot;</span>
+</span><span class='line'><span class="s">            create or replace view analytic_entries_report as (</span>
+</span><span class='line'><span class="s">                 select</span>
+</span><span class='line'><span class="s">                     min(a.id) as id,</span>
+</span><span class='line'><span class="s">                     count(distinct a.id) as nbr,</span>
+</span><span class='line'><span class="s">                     a.date as date,</span>
+</span><span class='line'><span class="s">                     to_char(a.date, &#39;YYYY&#39;) as year,</span>
+</span><span class='line'><span class="s">                     to_char(a.date, &#39;MM&#39;) as month,</span>
+</span><span class='line'><span class="s">                     to_char(a.date, &#39;YYYY-MM-DD&#39;) as day,</span>
+</span><span class='line'><span class="s">                     a.user_id as user_id,</span>
+</span><span class='line'><span class="s">                     a.name as name,</span>
+</span><span class='line'><span class="s">                     analytic.partner_id as partner_id,</span>
+</span><span class='line'><span class="s">                     a.company_id as company_id,</span>
+</span><span class='line'><span class="s">                     a.currency_id as currency_id,</span>
+</span><span class='line'><span class="s">                     a.account_id as account_id,</span>
+</span><span class='line'><span class="s">                     a.general_account_id as general_account_id,</span>
+</span><span class='line'><span class="s">                     a.journal_id as journal_id,</span>
+</span><span class='line'><span class="s">                     a.move_id as move_id,</span>
+</span><span class='line'><span class="s">                     a.product_id as product_id,</span>
+</span><span class='line'><span class="s">                     a.product_uom_id as product_uom_id,</span>
+</span><span class='line'><span class="s">                     sum(a.amount) as amount,</span>
+</span><span class='line'><span class="s">                     sum(a.unit_amount) as unit_amount</span>
+</span><span class='line'><span class="s">                 from</span>
+</span><span class='line'><span class="s">                     account_analytic_line a, account_analytic_account analytic</span>
+</span><span class='line'><span class="s">                 where analytic.id = a.account_id</span>
+</span><span class='line'><span class="s">                 group by</span>
+</span><span class='line'><span class="s">                     a.date, a.user_id,a.name,analytic.partner_id,a.company_id,a.currency_id,</span>
+</span><span class='line'><span class="s">                     a.account_id,a.general_account_id,a.journal_id,</span>
+</span><span class='line'><span class="s">                     a.move_id,a.product_id,a.product_uom_id</span>
+</span><span class='line'><span class="s">            )</span>
+</span><span class='line'><span class="s">        &quot;&quot;&quot;</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>STEP2: 在模块的函数中使用存储过程</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'>    <span class="k">def</span> <span class="nf">get_amount</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">cr</span><span class="p">,</span><span class="n">uid</span><span class="p">,</span><span class="nb">id</span><span class="p">,</span><span class="n">period_id</span><span class="p">,</span><span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+</span><span class='line'>        <span class="n">cr</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&#39;SELECT * FROM fn_fi_report_childs(</span><span class="si">%s</span><span class="s">)&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nb">id</span><span class="p">,))</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>而视图的话，则如普通的表一样使用。</p>
+
+<p>STEP3: 完成！</p>
+
+		
+		
+	</div>
+
+
+<div class="meta">
+	<div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-04-22T13:21:00+08:00" pubdate data-updated="true">Apr 22<span>nd</span>, 2013</time></div>
+	<div class="tags">
+
+
+	<a class='category' href='/blog/categories/openerp/'>OpenERP</a>
+
+
+</div>
+	
+
+	<span class="comments"><a id="uyan_count_unit" href="/blog/2013/04/22/openerp-postgresql-stored-procedure-and-view/#uyan_frame">0条评论</a><script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=1743843"></script></span>
+
+</div>
+</article>
+
+
+    <article class="post">
+	<h2 class="title">
+		
 		<a href="/blog/2013/03/10/greenopenerp-portable-openerp-for-windows/">
 		
 			GreenOpenERP &#8211; 绿色版 OpenERP for Windows</a>
@@ -133,7 +299,7 @@ Postgresql=9.2.3 用法 下载解压ZIP文件 &hellip;">
 
 <p><a href="http://sourceforge.net/projects/greenopenerp/files/">http://sourceforge.net/projects/greenopenerp/files/</a></p>
 
-<p>作者: wangbuke <a href="&#109;&#x61;&#105;&#x6c;&#116;&#111;&#58;&#x77;&#x61;&#x6e;&#103;&#x62;&#x75;&#x6b;&#x65;&#64;&#103;&#x6d;&#x61;&#105;&#x6c;&#x2e;&#99;&#x6f;&#109;">&#x77;&#x61;&#110;&#103;&#98;&#x75;&#107;&#101;&#x40;&#x67;&#109;&#97;&#105;&#x6c;&#x2e;&#x63;&#111;&#109;</a></p>
+<p>作者: wangbuke <a href="&#x6d;&#x61;&#105;&#108;&#116;&#111;&#x3a;&#x77;&#x61;&#110;&#x67;&#x62;&#x75;&#107;&#101;&#x40;&#x67;&#x6d;&#97;&#x69;&#108;&#x2e;&#99;&#x6f;&#x6d;">&#x77;&#97;&#x6e;&#103;&#98;&#x75;&#x6b;&#x65;&#x40;&#x67;&#x6d;&#x61;&#x69;&#x6c;&#46;&#x63;&#111;&#109;</a></p>
 
 <p>博客: http://buke.github.com/</p>
 
@@ -1700,222 +1866,6 @@ Postgresql=9.2.3 用法 下载解压ZIP文件 &hellip;">
 	
 
 	<span class="comments"><a id="uyan_count_unit" href="/blog/2012/07/18/taobao-openerp-connector/#uyan_frame">0条评论</a><script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=1743843"></script></span>
-
-</div>
-</article>
-
-
-    <article class="post">
-	<h2 class="title">
-		
-		<a href="/blog/2012/07/17/use-nginx-upstream-deploy-openerp/">
-		
-			使用Nginx Upstream 部署 OpenERP</a>
-	</h2>
-	<div class="entry-content">
-		<p>Openerp 6.1 使用werkzeug 作为web服务的框架，性能比之前的cherrypy 有了很大的改善。但无论是 werkzeug 还是cherrypy ，都不是专门的web服务器。通常的做法是在openerp 之前加一个 Nginx、Apache或其他服务器。下面介绍使用Nginx Upstream 部署openerp 的方法。</p>
-
-<h1>一 前提</h1>
-
-<p>此处假设您已经安装好 openerp ，并运行在 127.0.0.1:8069</p>
-
-<h1>二 安装Nginx</h1>
-
-<p>debian/ubuntu:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'># apt-get install nginx</span></code></pre></td></tr></table></div></figure>
-
-
-<p>redhat/centos:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'># yum install nginx</span></code></pre></td></tr></table></div></figure>
-
-
-<h1>三 配置Nginx</h1>
-
-<h2>1. 修改/etc/nginx/nginx.conf ，开启gzip 压缩</h2>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'># vi /etc/nginx/nginx.conf
-</span><span class='line'>
-</span><span class='line'>--------------nginx.conf 需修改内容节选--------------------------
-</span><span class='line'>        gzip on;
-</span><span class='line'>        gzip_disable "msie6";
-</span><span class='line'>
-</span><span class='line'>        gzip_vary on;
-</span><span class='line'>        gzip_proxied any;
-</span><span class='line'>        gzip_comp_level 6;
-</span><span class='line'>        gzip_buffers 16 8k;
-</span><span class='line'>        gzip_http_version 1.1;
-</span><span class='line'>        #添加一个类型 application/javascript
-</span><span class='line'>        gzip_types text/plain text/css application/javascript application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript;</span></code></pre></td></tr></table></div></figure>
-
-
-<p>吐槽一下，是否开启gzip，差别真不小。oe 首页加载的http://127.0.0.1/web/webclient/js 开启前文件大小是 1.4M , 开启后大小是350.6 KB （通过firebug 查看）。</p>
-
-<h2>2. 建立 openerp 配置文件</h2>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-<span class='line-number'>42</span>
-<span class='line-number'>43</span>
-<span class='line-number'>44</span>
-<span class='line-number'>45</span>
-<span class='line-number'>46</span>
-<span class='line-number'>47</span>
-<span class='line-number'>48</span>
-<span class='line-number'>49</span>
-<span class='line-number'>50</span>
-<span class='line-number'>51</span>
-<span class='line-number'>52</span>
-<span class='line-number'>53</span>
-<span class='line-number'>54</span>
-<span class='line-number'>55</span>
-<span class='line-number'>56</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'># touch /etc/nginx/sites-enabled/openerp
-</span><span class='line'># vi /etc/nginx/sites-enabled/openerp
-</span><span class='line'>
-</span><span class='line'>--------------------openerp 文件内容---------------------------
-</span><span class='line'>
-</span><span class='line'>proxy_temp_path /tmp/nginx_proxy_temp;
-</span><span class='line'>proxy_cache_path  /tmp/nginx_proxy_cache levels=1:2  keys_zone=oecache:100m inactive=3d max_size=1000m;
-</span><span class='line'>
-</span><span class='line'>proxy_buffer_size     32k;              #设置代理服务器（nginx）保存用户头信息的缓冲区大小
-</span><span class='line'>proxy_buffers         4 32k;            #proxy_buffers缓冲区，网页平均在32k以下的话，这样设置
-</span><span class='line'>proxy_busy_buffers_size  64k;           #高负荷下缓冲大小（proxy_buffers*2）
-</span><span class='line'>proxy_temp_file_write_size  64k;       #设定缓存文件夹大小，大于这个值，将从upstream服务器传
-</span><span class='line'>
-</span><span class='line'>proxy_connect_timeout      60;
-</span><span class='line'>proxy_send_timeout         60;
-</span><span class='line'>proxy_read_timeout         3000;
-</span><span class='line'>
-</span><span class='line'>upstream oeserver{
-</span><span class='line'>        server 127.0.0.1:8069;
-</span><span class='line'>}
-</span><span class='line'>
-</span><span class='line'>server {
-</span><span class='line'>
-</span><span class='line'>        server_name  www.example.com;
-</span><span class='line'>
-</span><span class='line'>        root /var/www/openerp-6.1-1/openerp/addons;
-</span><span class='line'>
-</span><span class='line'>        location /{
-</span><span class='line'>
-</span><span class='line'>                proxy_cache              oecache;
-</span><span class='line'>                #proxy_cache_key "$host$request_uri$request_body";
-</span><span class='line'>                proxy_cache_key $host$request_uri$request_body;
-</span><span class='line'>                proxy_cache_valid  200 304 1d;
-</span><span class='line'>                proxy_cache_valid  any   1d;
-</span><span class='line'>
-</span><span class='line'>                proxy_next_upstream http_502 http_504 error timeout invalid_header;
-</span><span class='line'>                proxy_pass_header Set-Cookie;
-</span><span class='line'>                proxy_set_header   Host             $host;
-</span><span class='line'>                proxy_set_header   X-Real-IP        $remote_addr;
-</span><span class='line'>                proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
-</span><span class='line'>                proxy_redirect  off;
-</span><span class='line'>
-</span><span class='line'>                proxy_pass http://oeserver;
-</span><span class='line'>
-</span><span class='line'>                proxy_buffering on;
-</span><span class='line'>                proxy_cache_valid       1d;
-</span><span class='line'>                expires 1d;
-</span><span class='line'>        }
-</span><span class='line'>
-</span><span class='line'>        location ~* \.(js|css|png|jpg|jpeg|gif|ico)$ {
-</span><span class='line'>                proxy_buffering on;
-</span><span class='line'>                proxy_cache_valid       1d;
-</span><span class='line'>                expires 1d;
-</span><span class='line'>        }
-</span><span class='line'>
-</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
-
-
-<h1>完成 ！</h1>
-
-<p>Nginx 此处仅仅是作为 openerp 的前端WEB服务器，Nginx 还有更大的作用是可以实现Openerp 的负载平衡。此处按下不表，呵呵</p>
-
-		
-		
-	</div>
-
-
-<div class="meta">
-	<div class="date">
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-07-17T15:51:00+08:00" pubdate data-updated="true">Jul 17<span>th</span>, 2012</time></div>
-	<div class="tags">
-
-
-	<a class='category' href='/blog/categories/openerp/'>OpenERP</a>
-
-
-</div>
-	
-
-	<span class="comments"><a id="uyan_count_unit" href="/blog/2012/07/17/use-nginx-upstream-deploy-openerp/#uyan_frame">0条评论</a><script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=1743843"></script></span>
 
 </div>
 </article>

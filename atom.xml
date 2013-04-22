@@ -4,7 +4,7 @@
   <title><![CDATA[步科 的博客]]></title>
   <link href="http://buke.github.com/atom.xml" rel="self"/>
   <link href="http://buke.github.com/"/>
-  <updated>2013-03-18T17:22:05+08:00</updated>
+  <updated>2013-04-22T13:31:39+08:00</updated>
   <id>http://buke.github.com/</id>
   <author>
     <name><![CDATA[步科]]></name>
@@ -12,6 +12,128 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[openerp 使用 postgresql 存储过程和视图]]></title>
+    <link href="http://buke.github.com/blog/2013/04/22/openerp-postgresql-stored-procedure-and-view/"/>
+    <updated>2013-04-22T13:21:00+08:00</updated>
+    <id>http://buke.github.com/blog/2013/04/22/openerp-postgresql-stored-procedure-and-view</id>
+    <content type="html"><![CDATA[<p>OpenERP 使用 postgresql 存储过程和试图，步骤如下：</p>
+
+<p>STEP1: 在模块的 init 函数中定义存储过程</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'>    <span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cr</span><span class="p">):</span>
+</span><span class='line'>        <span class="sd">&#39;&#39;&#39; create stored procedure &#39;&#39;&#39;</span>
+</span><span class='line'>        <span class="n">cr</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;&quot;&quot;CREATE OR REPLACE FUNCTION fn_fi_report_childs(int)</span>
+</span><span class='line'><span class="s">        RETURNS TABLE(id int) AS $$</span>
+</span><span class='line'><span class="s">            WITH RECURSIVE t AS (</span>
+</span><span class='line'><span class="s">                SELECT id,parent_id  FROM fi_report WHERE id = $1</span>
+</span><span class='line'><span class="s">              UNION ALL</span>
+</span><span class='line'><span class="s">                SELECT fi_report.id, fi_report.parent_id FROM fi_report, t WHERE fi_report.parent_id = t.id</span>
+</span><span class='line'><span class="s">            )</span>
+</span><span class='line'><span class="s">            SELECT id FROM t;</span>
+</span><span class='line'><span class="s">        $$ LANGUAGE SQL</span>
+</span><span class='line'><span class="s">            &quot;&quot;&quot;</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>或者定义视图</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'>    <span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cr</span><span class="p">):</span>
+</span><span class='line'>        <span class="n">tools</span><span class="o">.</span><span class="n">drop_view_if_exists</span><span class="p">(</span><span class="n">cr</span><span class="p">,</span> <span class="s">&#39;analytic_entries_report&#39;</span><span class="p">)</span>
+</span><span class='line'>        <span class="n">cr</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;&quot;&quot;</span>
+</span><span class='line'><span class="s">            create or replace view analytic_entries_report as (</span>
+</span><span class='line'><span class="s">                 select</span>
+</span><span class='line'><span class="s">                     min(a.id) as id,</span>
+</span><span class='line'><span class="s">                     count(distinct a.id) as nbr,</span>
+</span><span class='line'><span class="s">                     a.date as date,</span>
+</span><span class='line'><span class="s">                     to_char(a.date, &#39;YYYY&#39;) as year,</span>
+</span><span class='line'><span class="s">                     to_char(a.date, &#39;MM&#39;) as month,</span>
+</span><span class='line'><span class="s">                     to_char(a.date, &#39;YYYY-MM-DD&#39;) as day,</span>
+</span><span class='line'><span class="s">                     a.user_id as user_id,</span>
+</span><span class='line'><span class="s">                     a.name as name,</span>
+</span><span class='line'><span class="s">                     analytic.partner_id as partner_id,</span>
+</span><span class='line'><span class="s">                     a.company_id as company_id,</span>
+</span><span class='line'><span class="s">                     a.currency_id as currency_id,</span>
+</span><span class='line'><span class="s">                     a.account_id as account_id,</span>
+</span><span class='line'><span class="s">                     a.general_account_id as general_account_id,</span>
+</span><span class='line'><span class="s">                     a.journal_id as journal_id,</span>
+</span><span class='line'><span class="s">                     a.move_id as move_id,</span>
+</span><span class='line'><span class="s">                     a.product_id as product_id,</span>
+</span><span class='line'><span class="s">                     a.product_uom_id as product_uom_id,</span>
+</span><span class='line'><span class="s">                     sum(a.amount) as amount,</span>
+</span><span class='line'><span class="s">                     sum(a.unit_amount) as unit_amount</span>
+</span><span class='line'><span class="s">                 from</span>
+</span><span class='line'><span class="s">                     account_analytic_line a, account_analytic_account analytic</span>
+</span><span class='line'><span class="s">                 where analytic.id = a.account_id</span>
+</span><span class='line'><span class="s">                 group by</span>
+</span><span class='line'><span class="s">                     a.date, a.user_id,a.name,analytic.partner_id,a.company_id,a.currency_id,</span>
+</span><span class='line'><span class="s">                     a.account_id,a.general_account_id,a.journal_id,</span>
+</span><span class='line'><span class="s">                     a.move_id,a.product_id,a.product_uom_id</span>
+</span><span class='line'><span class="s">            )</span>
+</span><span class='line'><span class="s">        &quot;&quot;&quot;</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>STEP2: 在模块的函数中使用存储过程</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'>    <span class="k">def</span> <span class="nf">get_amount</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">cr</span><span class="p">,</span><span class="n">uid</span><span class="p">,</span><span class="nb">id</span><span class="p">,</span><span class="n">period_id</span><span class="p">,</span><span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+</span><span class='line'>        <span class="n">cr</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&#39;SELECT * FROM fn_fi_report_childs(</span><span class="si">%s</span><span class="s">)&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nb">id</span><span class="p">,))</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>而视图的话，则如普通的表一样使用。</p>
+
+<p>STEP3: 完成！</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[GreenOpenERP -- 绿色版 OpenERP For Windows]]></title>
@@ -47,7 +169,7 @@
 
 <p><a href="http://sourceforge.net/projects/greenopenerp/files/">http://sourceforge.net/projects/greenopenerp/files/</a></p>
 
-<p>作者: wangbuke <a href="&#109;&#x61;&#105;&#x6c;&#116;&#111;&#58;&#x77;&#x61;&#x6e;&#103;&#x62;&#x75;&#x6b;&#x65;&#64;&#103;&#x6d;&#x61;&#105;&#x6c;&#x2e;&#99;&#x6f;&#109;">&#x77;&#x61;&#110;&#103;&#98;&#x75;&#107;&#101;&#x40;&#x67;&#109;&#97;&#105;&#x6c;&#x2e;&#x63;&#111;&#109;</a></p>
+<p>作者: wangbuke <a href="&#x6d;&#x61;&#105;&#108;&#116;&#111;&#x3a;&#x77;&#x61;&#110;&#x67;&#x62;&#x75;&#107;&#101;&#x40;&#x67;&#x6d;&#97;&#x69;&#108;&#x2e;&#99;&#x6f;&#x6d;">&#x77;&#97;&#x6e;&#103;&#98;&#x75;&#x6b;&#x65;&#x40;&#x67;&#x6d;&#x61;&#x69;&#x6c;&#46;&#x63;&#111;&#109;</a></p>
 
 <p>博客: http://buke.github.com/</p>
 

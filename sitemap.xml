@@ -57,12 +57,18 @@
         <lastmod>2013-04-22T13:31:38+08:00</lastmod>
     </url>
     <url>
+        <loc>
+            http://buke.github.com/blog/2013/06/27/using-eclipse-pydev-to-debug-green-openerp-for-windows/
+        </loc>
+        <lastmod>2013-06-27T14:22:17+08:00</lastmod>
+    </url>
+    <url>
         <loc>http://buke.github.com/projects/</loc>
         <lastmod>2013-03-18T17:21:18+08:00</lastmod>
     </url>
     <url>
         <loc>http://buke.github.com/blog/archives/</loc>
-        <lastmod>2013-04-22T13:31:38+08:00</lastmod>
+        <lastmod>2013-06-27T14:22:17+08:00</lastmod>
     </url>
     <url>
         <loc>http://buke.github.com/about/</loc>
@@ -74,6 +80,6 @@
     </url>
     <url>
         <loc>http://buke.github.com/</loc>
-        <lastmod>2013-04-22T13:31:38+08:00</lastmod>
+        <lastmod>2013-06-27T14:22:17+08:00</lastmod>
     </url>
 </urlset>

@@ -4,7 +4,7 @@
   <title><![CDATA[Category: OpenERP | 步科 的博客]]></title>
   <link href="http://buke.github.com/blog/categories/openerp/atom.xml" rel="self"/>
   <link href="http://buke.github.com/"/>
-  <updated>2013-04-22T13:31:39+08:00</updated>
+  <updated>2013-06-27T14:22:18+08:00</updated>
   <id>http://buke.github.com/</id>
   <author>
     <name><![CDATA[步科]]></name>
@@ -12,6 +12,98 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[使用 Eclipse Pydev 调试 GreenOpenERP For Windows]]></title>
+    <link href="http://buke.github.com/blog/2013/06/27/using-eclipse-pydev-to-debug-green-openerp-for-windows/"/>
+    <updated>2013-06-27T13:32:00+08:00</updated>
+    <id>http://buke.github.com/blog/2013/06/27/using-eclipse-pydev-to-debug-green-openerp-for-windows</id>
+    <content type="html"><![CDATA[<h2>关于 GreenOpenERP</h2>
+
+<p>OpenERP 绿色版 For Windows，源码运行，解压即用，集成 python/postgresql/openerp</p>
+
+<p>相关介绍和下载，请看 <a href="http://buke.github.io/blog/2013/03/10/greenopenerp-portable-openerp-for-windows/">http://buke.github.io/blog/2013/03/10/greenopenerp-portable-openerp-for-windows/</a></p>
+
+<h2>关于 Eclipse 和 Pydev</h2>
+
+<p>Eclipse, 请到<a href="http://www.eclipse.org/">http://www.eclipse.org/</a> 下载安装。</p>
+
+<p>Pydev, 请到<a href="http://pydev.org/">http://pydev.org/</a> 下载安装。(推荐使用eclipse 在线安装 pydev，打开eclipse 后，点击菜单 “help” -> "Install New Software", 输入 “http://pydev.org/updates” 刷新后选择 pydev 安装即可。)</p>
+
+<h2>源码调试 GreenOpenERP</h2>
+
+<p>此处假设您已经安装好 Eclipse 和 Pydev，并可以正确运行。</p>
+
+<h3>1、下载 GreenOpenERP</h3>
+
+<p>从<a href="http://sourceforge.net/projects/greenopenerp/files/">http://sourceforge.net/projects/greenopenerp/files/</a> 下载并解压 GreenOpenERP-7.0-xxxxxxxx-xxxxxx</p>
+
+<h3>2、配置 pydev 的 python interpreters</h3>
+
+<p>打开 eclipse ， 选择菜单 “Window” -> "Preferences"</p>
+
+<p><img src="/images/my/pydev-0.png"></p>
+
+<p>点击 pydev，选择 Interpreter - Python , 如有旧的Interpreter 请先删除。点击 New ，在弹出的窗口中 Browse 到下载解压的 GreenOpenERP-7.0-xxxxxxxx-xxxxxx\python\python.exe</p>
+
+<p><img src="/images/my/pydev-1.png"></p>
+
+<p>选择 Select All， 然后点击 OK</p>
+
+<p><img src="/images/my/pydev-2.png"></p>
+
+<p>回到刚才窗口， python interpreters 的相关参数应已配好。点击 Apply 后，点 Ok</p>
+
+<p><img src="/images/my/pydev-3.png"></p>
+
+<h3>3、选择 pydev 开发界面。</h3>
+
+<p>Eclipse 默认是 java 开发界面，点击右上角的小图表，在弹出的窗口选择 pydev</p>
+
+<p><img src="/images/my/pydev-4.png"></p>
+
+<h3>4、导入 GreenOpenERP Project</h3>
+
+<p>在 Package Explorer 界面内点击右键，在弹出的菜单里选择 Import</p>
+
+<p><img src="/images/my/pydev-5.png"></p>
+
+<p>选择 Existing Project into Workspace 后，点 Next</p>
+
+<p><img src="/images/my/pydev-6.png"></p>
+
+<p>点击 Browse 后，选择解压后的 GreenOpenERP 文件夹, 随后点击 Finish</p>
+
+<p><img src="/images/my/pydev-7.png"></p>
+
+<h3>5、启动 Postgresql</h3>
+
+<p>运行 GreenOpenERP 文件夹的 start-pg.bat 启动 pg 数据库。（关闭pg 数据库则运行 stop-pg.bat）</p>
+
+<h3>6、启动调试</h3>
+
+<p>在相应文件设置好断点后（也可不设置断点），在 eclipse 的 Package Explorer 界面右键点击 openerp-server, 在弹出菜单选择 Debug As -> Python Run</p>
+
+<p><img src="/images/my/pydev-8.png"></p>
+
+<h3>7、完成</h3>
+
+<p>送断点调试界面图一张</p>
+
+<p><img src="/images/my/pydev-9.png"></p>
+
+<h3>8、注意事项</h3>
+
+<ul>
+<li>调试前需运行 start-pg.bat 启动数据库。</li>
+<li>如需关闭数据库，请运行 stop-pg.bat 关闭。切勿直接关闭cmd窗口。</li>
+<li>正常运行(非调试)和关闭 GreenOpenERP，请运行 start.bat 和 stop.bat .</li>
+</ul>
+
+
+<p>转载请注明出处</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[openerp 使用 postgresql 存储过程和视图]]></title>
@@ -195,7 +287,7 @@
 
 <p><a href="http://sourceforge.net/projects/greenopenerp/files/">http://sourceforge.net/projects/greenopenerp/files/</a></p>
 
-<p>作者: wangbuke <a href="&#109;&#97;&#105;&#108;&#116;&#x6f;&#58;&#119;&#97;&#110;&#103;&#98;&#117;&#x6b;&#101;&#64;&#x67;&#109;&#x61;&#x69;&#x6c;&#x2e;&#x63;&#111;&#109;">&#x77;&#97;&#110;&#103;&#x62;&#x75;&#107;&#x65;&#x40;&#103;&#x6d;&#97;&#x69;&#x6c;&#46;&#x63;&#x6f;&#109;</a></p>
+<p>作者: wangbuke <a href="&#x6d;&#x61;&#105;&#108;&#116;&#111;&#x3a;&#119;&#x61;&#110;&#103;&#98;&#x75;&#107;&#x65;&#x40;&#103;&#109;&#97;&#x69;&#108;&#46;&#99;&#x6f;&#x6d;">&#x77;&#x61;&#110;&#x67;&#98;&#x75;&#x6b;&#x65;&#x40;&#x67;&#x6d;&#97;&#105;&#108;&#x2e;&#99;&#111;&#109;</a></p>
 
 <p>博客: http://buke.github.com/</p>
 
@@ -1044,215 +1136,6 @@
 <p>F5 刷新页面重新加载 或者  升级OpenERP 版本</p>
 
 <p><img src="/images/my/oe-pdf-7.jpg"></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[OpenERP 负载平衡]]></title>
-    <link href="http://buke.github.com/blog/2013/01/21/openerp-load-balance/"/>
-    <updated>2013-01-21T15:11:00+08:00</updated>
-    <id>http://buke.github.com/blog/2013/01/21/openerp-load-balance</id>
-    <content type="html"><![CDATA[<p> OpenERP 7.0 带来了许多新特性，架构上也有许多改进。其中可配置 worker 参数，可使 OpenERP 运行在多进程模式，突破GIL的限制，有效利用了现代多核CPU的性能。但默认情况下，OpenERP 只能运行于一台服务器，对于提供SAAS服务或并发很大的情况下，单台服务器的性能是有限的。本文介绍实现 OpenERP 负载平衡的方法和原理。</p>
-
-<p>一、架构</p>
-
-<pre><code>┌──────────────────────────────────────────────┐
-│                   Nginx                      │
-└──────────────────────────────────────────────┘
-        /              |                \
-┌────────────┐   ┌────────────┐    ┌────────────┐
-│ OE Server  │   │ OE Server  │    │ OE Server  │
-└────────────┘   └────────────┘    └────────────┘
-         \             |                /
-┌───────────────────────────────────────────────┐
-│                Redis Server                   │
-└───────────────────────────────────────────────┘
-</code></pre>
-
-<p>注：实现负载平衡的关键点在于 cache 和 session 共享。</p>
-
-<p>二、Web 服务器配置</p>
-
-<p>WEB 服务器选择 Nginx + upstream 配置，可参考 “使用Nginx Upstream 部署 OpenERP ” http://my.oschina.net/wangbuke/blog/67450 。</p>
-
-<p>默认情况下，nginx 采用轮询的方式，将请求分发到多个 OE Server 里。建议改为 ip_hash 方式，如：</p>
-
-<pre><code>upstream bakend {
-     ip_hash;
-     server 192.168.0.11:8069;
-     server 192.168.0.12:8069;
-}
-</code></pre>
-
-<p>三、OpenERP 的 Session 和 Cache 处理</p>
-
-<p>3.1 OpenERP Web Session 处理</p>
-
-<p>OpenERP 中的Session 处理默认用FilesystemSessionStore，使用文件系统存储用户 session  。如 openerp/addons/web/http.py</p>
-
-<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">class</span> <span class="nc">Root</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="bp">self</span><span class="o">.</span><span class="n">session_store</span> <span class="o">=</span> <span class="n">werkzeug</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">sessions</span><span class="o">.</span><span class="n">FilesystemSessionStore</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-</span><span class='line'>    <span class="bp">self</span><span class="o">.</span><span class="n">session_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
-</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
-
-<p>那么我们只要将OpenERP 中的SessionStore，改为 RedisSessionStore，RedisSessionStore 可参考https://gist.github.com/1451947 。</p>
-
-<p>修改方法，可以直接修改 http.py 文件。
-或是和我一样，重写一个库，重载 session_context 方法，这样可以不修改OpenERP的源文件，方便以后升级。</p>
-
-<p>3.2 OpenERP LRU Cache 处理</p>
-
-<p>openerp/tools/cache.py 中 ormcache 和 ormcache_multi 是 OpenERP 中非常重要的缓存类。OpenERP ORM 大部分的方法调用都会经过 @tools.ormcache 或 @ormcache_multi 修饰。经过修饰后，结果会被缓存，这个缓存是存放于内存中。 这个就是OE在加载一次数据后，第二次会明显快很多的原因。还有，通过web 界面翻译OE术语不能实时生效，也是因为缓存没有更新。</p>
-
-<p>可以修改ormcache 和 ormcache_multi 类，以使用 redis 缓存。关键代码如下：</p>
-
-<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">lookup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">self2</span><span class="p">,</span> <span class="n">cr</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
-</span><span class='line'>    <span class="n">key</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">skiparg</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
-</span><span class='line'>    <span class="n">key</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">:</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
-</span><span class='line'>    <span class="c">#key = md5(key).hexdigest()</span>
-</span><span class='line'>    <span class="n">hash_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_key_template</span> <span class="o">%</span> <span class="n">cr</span><span class="o">.</span><span class="n">dbname</span>
-</span><span class='line'>    <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">redis</span><span class="o">.</span><span class="n">hget</span><span class="p">(</span><span class="n">hash_name</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
-</span><span class='line'>    <span class="k">if</span> <span class="n">value</span><span class="p">:</span>
-</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">stat_hit</span> <span class="o">+=</span> <span class="mi">1</span>
-</span><span class='line'>        <span class="k">return</span> <span class="n">loads</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-</span><span class='line'>    <span class="k">else</span><span class="p">:</span>
-</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">stat_miss</span> <span class="o">+=</span> <span class="mi">1</span>
-</span><span class='line'>        <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="p">(</span><span class="n">self2</span><span class="p">,</span> <span class="n">cr</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
-</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">redis</span><span class="o">.</span><span class="n">hset</span><span class="p">(</span><span class="n">hash_name</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">dumps</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">HIGHEST_PROTOCOL</span><span class="p">))</span>
-</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">redis</span><span class="o">.</span><span class="n">expire</span><span class="p">(</span><span class="n">hash_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
-</span><span class='line'>        <span class="k">return</span> <span class="n">value</span>
-</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
-
-<p>缓存的值使用 cPickle 序列化后，将每个键值对存放于 redis 的 哈希表中。</p>
-
-<p>3.3 auth_openid 模块</p>
-
-<p>auth_openid模块也使用文件系统存储用户登录凭证。如：</p>
-
-<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">class</span> <span class="nc">OpenIDController</span><span class="p">(</span><span class="n">openerp</span><span class="o">.</span><span class="n">addons</span><span class="o">.</span><span class="n">web</span><span class="o">.</span><span class="n">http</span><span class="o">.</span><span class="n">Controller</span><span class="p">):</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">_store</span> <span class="o">=</span> <span class="n">filestore</span><span class="o">.</span><span class="n">FileOpenIDStore</span><span class="p">(</span><span class="n">_storedir</span><span class="p">)</span>
-</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div>
-如果您启用了这个模块，那么这里也需要修改为存储在redis中。如果没有启用此模块，则无需理会。</p>
-
-<p>相关实现可参考，https://github.com/bbangert/openid-redis/blob/master/openidredis/<strong>init</strong>.py</p>
-
-<p>四、OpenERP Cron 处理</p>
-
-<p>默认情况下，每个OpenERP Server 实例都会运行一个 cron 进程任务。这里建议只允许一个实例运行CRON。把OpenERP 7.0 的配置参数 max_cron_threads 设置为0 ，即可禁止cron。相关代码如下：</p>
-
-<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">process_spawn</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span class='line'>    <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">workers_http</span><span class="p">)</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span> <span class="bp">self</span><span class="o">.</span><span class="n">population</span><span class="p">:</span>
-</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">worker_spawn</span><span class="p">(</span><span class="n">WorkerHTTP</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">workers_http</span><span class="p">)</span>
-</span><span class='line'>    <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">workers_cron</span><span class="p">)</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span> <span class="n">config</span><span class="p">[</span><span class="s">&#39;max_cron_threads&#39;</span><span class="p">]:</span>
-</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">worker_spawn</span><span class="p">(</span><span class="n">WorkerCron</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">workers_cron</span><span class="p">)</span>
-</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
-
-<p>五、OpenERP Module RegistryManager 处理</p>
-
-<p>OpenERP Module Registry 主要负责管理OE的对象。一般是安装或更新的模块时候，会根据定义来更新数据库。 在OE多进程模式下，OE会自动管理 Module Registry ，相关的更新信息会存放在数据库里。RegistryManager  会检测是否有更新，如有更新将会自动清除缓存并重新载入。相关代码如下：</p>
-
-<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="nd">@classmethod</span>
-</span><span class='line'><span class="k">def</span> <span class="nf">setup_multi_process_signaling</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">cr</span><span class="p">):</span>
-</span><span class='line'>    <span class="k">if</span> <span class="ow">not</span> <span class="n">openerp</span><span class="o">.</span><span class="n">multi_process</span><span class="p">:</span>
-</span><span class='line'>        <span class="k">return</span>
-</span><span class='line'>
-</span><span class='line'><span class="nd">@classmethod</span>
-</span><span class='line'><span class="k">def</span> <span class="nf">check_registry_signaling</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">db_name</span><span class="p">):</span>
-</span><span class='line'>    <span class="k">if</span> <span class="n">openerp</span><span class="o">.</span><span class="n">multi_process</span> <span class="ow">and</span> <span class="n">db_name</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">registries</span><span class="p">:</span>
-</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
-
-<p>这里，实际上无需做改动,上面只是说明情况。只需让OE运行在多进程模式即可（也就是配置 worker 参数）。</p>
-
-<p>六、完成！</p>
-
-<p>经过以上几个步骤，可以让OpenERP 运行于多台服务器，通过Redis 分布式缓存处理相关的 Cache 和 Session，从而实现 OpenERP 负载平衡。</p>
-
-<p>注：
-1、本文仅讨论 OpenERP 负载平衡部署方式，并不涉及 Postgresql 和 Redis 的负载平衡，相应的方法请自行搜索。
-2、鉴于OpenERP SA 官方已不再维护 GTK 客户端，并没有对GTK客户端的情况进行完整测试。</p>
 ]]></content>
   </entry>
   

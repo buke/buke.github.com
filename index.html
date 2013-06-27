@@ -8,7 +8,10 @@
     <meta name="google-site-verification" content="bFYi4ujLMuKmCNqh1lb0azIHJGV9rJwfmq--XRbo_tw" />
 
 	
-	<meta name="description" content="关于 GreenOpenERP OpenERP 绿色版 For Windows，源码运行，解压即用，集成 python/postgresql/openerp 相关介绍和下载，请看 http://buke.github.io/blog/2013/03/10/greenopenerp- &hellip;">
+	<meta name="description" content="使用 VirtualBox/VMWare 复制 centos/redhat 或 debian/ubuntu 虚拟机时，如果你选择了初始化网卡MAC地址，复制之后往往会发现网络无法使用。 如执行以下命令则提示错误 1
+2
+# ifup eth0
+Device eth0 does not seem &hellip;">
 	
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
@@ -92,6 +95,84 @@
 		
 	
 	<div id="content" class="inner">
+
+
+    <article class="post">
+	<h2 class="title">
+		
+		<a href="/blog/2013/06/27/fix-eth0-network-interface-when-cloning-centos-slash-redhat-or-debian-slash-ubuntu-virtual-machines-using-virtualbox-or-vmware/">
+		
+			复制 Virtualbox/vmware Linux虚拟机网络无法访问错误的解决方法</a>
+	</h2>
+	<div class="entry-content">
+		<p>使用 VirtualBox/VMWare 复制 centos/redhat 或 debian/ubuntu 虚拟机时，如果你选择了初始化网卡MAC地址，复制之后往往会发现网络无法使用。</p>
+
+<p>如执行以下命令则提示错误</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'># ifup eth0
+</span><span class='line'>Device eth0 does not seem to be present, delaying initialisation</span></code></pre></td></tr></table></div></figure>
+
+
+<p>原因是VirtualBox/VMWare 在复制时改变了网卡的MAC地址，和原虚拟机网卡eth0地址不符。</p>
+
+<p>解决办法：</p>
+
+<p>1、删除网络规则文件</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'># rm -f /etc/udev/rules.d/70-persistent-net.rules</span></code></pre></td></tr></table></div></figure>
+
+
+<p>2、修改 eth0 的配置文件 (debian/ubuntu 跳过)</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'># vim /etc/sysconfig/network-scripts/ifcfg-eth0
+</span><span class='line'>删除 HWADDR 和 UUID 行即可</span></code></pre></td></tr></table></div></figure>
+
+
+<p>3、重启</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'># reboot</span></code></pre></td></tr></table></div></figure>
+
+
+<p>完成！</p>
+
+		
+		
+	</div>
+
+
+<div class="meta">
+	<div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-06-27T16:36:00+08:00" pubdate data-updated="true">Jun 27<span>th</span>, 2013</time></div>
+	<div class="tags">
+
+
+	<a class='category' href='/blog/categories/linux/'>Linux</a>
+
+
+</div>
+	
+
+	<span class="comments"><a id="uyan_count_unit" href="/blog/2013/06/27/fix-eth0-network-interface-when-cloning-centos-slash-redhat-or-debian-slash-ubuntu-virtual-machines-using-virtualbox-or-vmware/#uyan_frame">0条评论</a><script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=1743843"></script></span>
+
+</div>
+</article>
 
 
     <article class="post">
@@ -415,7 +496,7 @@
 
 <p><a href="http://sourceforge.net/projects/greenopenerp/files/">http://sourceforge.net/projects/greenopenerp/files/</a></p>
 
-<p>作者: wangbuke <a href="&#x6d;&#x61;&#105;&#x6c;&#116;&#x6f;&#x3a;&#119;&#97;&#x6e;&#103;&#x62;&#117;&#107;&#x65;&#x40;&#103;&#109;&#97;&#105;&#x6c;&#46;&#99;&#111;&#x6d;">&#119;&#x61;&#110;&#x67;&#98;&#x75;&#x6b;&#x65;&#x40;&#103;&#109;&#97;&#x69;&#108;&#46;&#99;&#111;&#x6d;</a></p>
+<p>作者: wangbuke <a href="&#109;&#97;&#105;&#x6c;&#116;&#111;&#x3a;&#119;&#x61;&#110;&#103;&#x62;&#117;&#x6b;&#101;&#64;&#103;&#x6d;&#97;&#x69;&#x6c;&#x2e;&#x63;&#x6f;&#x6d;">&#119;&#x61;&#x6e;&#103;&#x62;&#x75;&#107;&#x65;&#x40;&#x67;&#x6d;&#97;&#105;&#108;&#x2e;&#99;&#111;&#x6d;</a></p>
 
 <p>博客: http://buke.github.com/</p>
 
@@ -1724,72 +1805,6 @@
 	
 
 	<span class="comments"><a id="uyan_count_unit" href="/blog/2012/08/19/openerp-pychart-unicode-report/#uyan_frame">0条评论</a><script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=1743843"></script></span>
-
-</div>
-</article>
-
-
-    <article class="post">
-	<h2 class="title">
-		
-		<a href="/blog/2012/08/02/openerp-web-pdf-report-preview-and-print/">
-		
-			开源模块 Openerp Web PDF Report Preview & Print 简介</a>
-	</h2>
-	<div class="entry-content">
-		<p>Openerp Web PDF Report Preview &amp; Print</p>
-
-<p>下载地址： https://github.com/buke/openerp-web-pdf-preview-print</p>
-
-<p>openerp 官方app下载 ：  http://apps.openerp.com/addon/7941</p>
-
-<p>简介:</p>
-
-<p>将OpenERP 的PDF报表打印下载功能，改为直接在浏览器中预览打印。</p>
-
-<p>For IE， 需要安装 Adobe Reader。</p>
-
-<p>For Firefox ,需要安装 Adobe Reader。</p>
-
-<p>For Chrome, 神马都不用安装。</p>
-
-<p>以上在windows 上测试通过。如果浏览器阻止了弹出窗口，请点允许弹出窗口。</p>
-
-<p>系统要求：</p>
-
-<p>OpenERP 6.1</p>
-
-<p><img src="/images/my/oe-pdf-print.jpg"></p>
-
-		
-		
-	</div>
-
-
-<div class="meta">
-	<div class="date">
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-08-02T15:32:00+08:00" pubdate data-updated="true">Aug 2<span>nd</span>, 2012</time></div>
-	<div class="tags">
-
-
-	<a class='category' href='/blog/categories/openerp/'>OpenERP</a>
-
-
-</div>
-	
-
-	<span class="comments"><a id="uyan_count_unit" href="/blog/2012/08/02/openerp-web-pdf-report-preview-and-print/#uyan_frame">0条评论</a><script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=1743843"></script></span>
 
 </div>
 </article>

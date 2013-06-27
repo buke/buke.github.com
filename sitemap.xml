@@ -63,12 +63,18 @@
         <lastmod>2013-06-27T14:25:25+08:00</lastmod>
     </url>
     <url>
+        <loc>
+            http://buke.github.com/blog/2013/06/27/fix-eth0-network-interface-when-cloning-centos-slash-redhat-or-debian-slash-ubuntu-virtual-machines-using-virtualbox-or-vmware/
+        </loc>
+        <lastmod>2013-06-27T17:06:16+08:00</lastmod>
+    </url>
+    <url>
         <loc>http://buke.github.com/projects/</loc>
         <lastmod>2013-03-18T17:21:18+08:00</lastmod>
     </url>
     <url>
         <loc>http://buke.github.com/blog/archives/</loc>
-        <lastmod>2013-06-27T14:25:25+08:00</lastmod>
+        <lastmod>2013-06-27T17:06:16+08:00</lastmod>
     </url>
     <url>
         <loc>http://buke.github.com/about/</loc>
@@ -80,6 +86,6 @@
     </url>
     <url>
         <loc>http://buke.github.com/</loc>
-        <lastmod>2013-06-27T14:25:25+08:00</lastmod>
+        <lastmod>2013-06-27T17:06:16+08:00</lastmod>
     </url>
 </urlset>

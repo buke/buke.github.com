@@ -3,14 +3,15 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<title>GreenOpenERP -- 绿色版 OpenERP For Windows - 步科 的博客</title>
+	<title>复制 Virtualbox/vmware linux虚拟机网络无法访问错误的解决方法 - 步科 的博客</title>
 	<meta name="author" content="步科">
     <meta name="google-site-verification" content="bFYi4ujLMuKmCNqh1lb0azIHJGV9rJwfmq--XRbo_tw" />
 
 	
-	<meta name="description" content="OpenERP 绿色版 For Windows，源码运行，解压即用，集成 python/postgresql/openerp。 软件版本 OpenERP (OpenERP 版本不定时更新, 看博主心情 :P )
-Python=2.7.3
-Postgresql=9.2.3 用法 下载解压ZIP文件， &hellip;">
+	<meta name="description" content="使用 VirtualBox/VMWare 复制 centos/redhat 或 debian/ubuntu 虚拟机时，如果你选择了初始化网卡MAC地址，复制之后往往会发现网络无法使用。 如执行以下命令则提示错误 1
+2
+# ifup eth0
+Device eth0 does not seem &hellip;">
 	
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
@@ -94,43 +95,42 @@ Postgresql=9.2.3 用法 下载解压ZIP文件， &hellip;">
 		
 	
 	<div id="content" class="inner"><article class="post">
-	<h2 class="title">GreenOpenERP -- 绿色版 OpenERP for Windows</h2>
-	<div class="entry-content"><p>OpenERP 绿色版 For Windows，源码运行，解压即用，集成 python/postgresql/openerp。</p>
+	<h2 class="title">复制 Virtualbox/vmware Linux虚拟机网络无法访问错误的解决方法</h2>
+	<div class="entry-content"><p>使用 VirtualBox/VMWare 复制 centos/redhat 或 debian/ubuntu 虚拟机时，如果你选择了初始化网卡MAC地址，复制之后往往会发现网络无法使用。</p>
 
-<h2>软件版本</h2>
+<p>如执行以下命令则提示错误</p>
 
-<ul>
-<li>OpenERP (OpenERP 版本不定时更新, 看博主心情 :P )</li>
-<li>Python=2.7.3</li>
-<li>Postgresql=9.2.3</li>
-</ul>
-
-
-<h2>用法</h2>
-
-<p>下载解压ZIP文件，然后运行 *.bat 批处理文件即可。（注意文件路径：不能含有中文等非西文字符）</p>
-
-<h2>执行脚本</h2>
-
-<ul>
-<li>start.bat &#8211; 运行 Postgresql 和 Openerp</li>
-<li>start-hide.bat &#8211; 隐藏命令行窗口，运行Postgresql 和 Openerp</li>
-<li>stop.bat &#8211; 停止 Postgresql 和 Openerp</li>
-<li>bin/pgAdmin3.exe &#8211; 运行 start.bat 之后，可以运行 pgAdmin 管理PG</li>
-</ul>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'># ifup eth0
+</span><span class='line'>Device eth0 does not seem to be present, delaying initialisation</span></code></pre></td></tr></table></div></figure>
 
 
-<h2>下载地址</h2>
+<p>原因是VirtualBox/VMWare 在复制时改变了网卡的MAC地址，和原虚拟机网卡eth0地址不符。</p>
 
-<p><a href="http://sourceforge.net/projects/greenopenerp/files/">http://sourceforge.net/projects/greenopenerp/files/</a></p>
+<p>解决办法：</p>
 
-<p>作者: wangbuke <a href="&#109;&#97;&#105;&#x6c;&#116;&#111;&#x3a;&#119;&#x61;&#110;&#103;&#x62;&#117;&#x6b;&#101;&#64;&#103;&#x6d;&#97;&#x69;&#x6c;&#x2e;&#x63;&#x6f;&#x6d;">&#119;&#x61;&#x6e;&#103;&#x62;&#x75;&#107;&#x65;&#x40;&#x67;&#x6d;&#97;&#105;&#108;&#x2e;&#99;&#111;&#x6d;</a></p>
+<p>1、删除网络规则文件</p>
 
-<p>博客: http://buke.github.com/</p>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'># rm -f /etc/udev/rules.d/70-persistent-net.rules</span></code></pre></td></tr></table></div></figure>
 
-<h2>UPDATE</h2>
 
-<p>添加 6.1.1 版本下载</p>
+<p>2、修改 eth0 的配置文件 (debian/ubuntu 跳过)</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'># vim /etc/sysconfig/network-scripts/ifcfg-eth0
+</span><span class='line'>删除 HWADDR 和 UUID 行即可</span></code></pre></td></tr></table></div></figure>
+
+
+<p>3、重启</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'># reboot</span></code></pre></td></tr></table></div></figure>
+
+
+<p>完成！</p>
 </div>
 
 
@@ -147,11 +147,11 @@ Postgresql=9.2.3 用法 下载解压ZIP文件， &hellip;">
   
 
 
-<time datetime="2013-03-10T21:43:00+08:00" pubdate data-updated="true">Mar 10<span>th</span>, 2013</time></div>
+<time datetime="2013-06-27T16:36:00+08:00" pubdate data-updated="true">Jun 27<span>th</span>, 2013</time></div>
 	<div class="tags">
 
 
-	<a class='category' href='/blog/categories/openerp/'>OpenERP</a>
+	<a class='category' href='/blog/categories/linux/'>Linux</a>
 
 
 </div>

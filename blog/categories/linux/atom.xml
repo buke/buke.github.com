@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Linux | 步科 的博客]]></title>
+  <link href="http://buke.github.com/blog/categories/linux/atom.xml" rel="self"/>
+  <link href="http://buke.github.com/"/>
+  <updated>2013-06-27T17:06:16+08:00</updated>
+  <id>http://buke.github.com/</id>
+  <author>
+    <name><![CDATA[步科]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[复制 Virtualbox/vmware linux虚拟机网络无法访问错误的解决方法]]></title>
+    <link href="http://buke.github.com/blog/2013/06/27/fix-eth0-network-interface-when-cloning-centos-slash-redhat-or-debian-slash-ubuntu-virtual-machines-using-virtualbox-or-vmware/"/>
+    <updated>2013-06-27T16:36:00+08:00</updated>
+    <id>http://buke.github.com/blog/2013/06/27/fix-eth0-network-interface-when-cloning-centos-slash-redhat-or-debian-slash-ubuntu-virtual-machines-using-virtualbox-or-vmware</id>
+    <content type="html"><![CDATA[<p>使用 VirtualBox/VMWare 复制 centos/redhat 或 debian/ubuntu 虚拟机时，如果你选择了初始化网卡MAC地址，复制之后往往会发现网络无法使用。</p>
+
+<p>如执行以下命令则提示错误</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;h1>ifup eth0&lt;/h1>
+</span><span class='line'>
+</span><span class='line'>&lt;p>Device eth0 does not seem to be present, delaying initialisation</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>原因是VirtualBox/VMWare 在复制时改变了网卡的MAC地址，和原虚拟机网卡eth0地址不符。</p>
+
+<p>解决办法：</p>
+
+<p>1、删除网络规则文件
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;h1>rm -f /etc/udev/rules.d/70-persistent-net.rules&lt;/h1>
+</span><span class='line'>
+</span><span class='line'>&lt;p></span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>2、修改 eth0 的配置文件 (debian/ubuntu 跳过)
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;h1>vim /etc/sysconfig/network-scripts/ifcfg-eth0&lt;/h1>
+</span><span class='line'>
+</span><span class='line'>&lt;p>删除 HWADDR 和 UUID 行即可</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>3、重启
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;h1>reboot&lt;/h1>
+</span><span class='line'>
+</span><span class='line'>&lt;p></span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>完成！</p>
+]]></content>
+  </entry>
+  
+</feed>

@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
   <title><![CDATA[Category: Tryton | 步科 的博客]]></title>
-  <link href="http://buke.github.com/blog/categories/tryton/atom.xml" rel="self"/>
-  <link href="http://buke.github.com/"/>
-  <updated>2013-06-29T18:30:45+08:00</updated>
-  <id>http://buke.github.com/</id>
+  <link href="http://buke.github.io/blog/categories/tryton/atom.xml" rel="self"/>
+  <link href="http://buke.github.io/"/>
+  <updated>2013-07-01T00:33:33+08:00</updated>
+  <id>http://buke.github.io/</id>
   <author>
     <name><![CDATA[步科]]></name>
     
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[Tryton 相关软件简介及名字背后的神话]]></title>
-    <link href="http://buke.github.com/blog/2013/01/28/trytons-name-and-myth-introdution/"/>
+    <link href="http://buke.github.io/blog/2013/01/28/trytons-name-and-myth-introdution/"/>
     <updated>2013-01-28T23:06:00+08:00</updated>
-    <id>http://buke.github.com/blog/2013/01/28/trytons-name-and-myth-introdution</id>
+    <id>http://buke.github.io/blog/2013/01/28/trytons-name-and-myth-introdution</id>
     <content type="html"><![CDATA[<p>Tryton 是一个MVC三层架构、高性能的通用应用ERP平台，基于 GPL-3 协议发布。其主要特点是模块化设计、可扩展性和安全。2008 年，Tryton 从 TinyERP  4.2 分支fork，并发布了1.0版本。不过到现在为止，Tryton 基本上重构了全部底层代码。到2012年9月，Tryton 已推出 2.6 版本。</p>
 
 <p>Tryton的名字来源于Triton，传说中Triton是希腊神话中海之信使，海王波塞冬和海后安菲特里忒的儿子。另外海王星的命名体系也是来源于希腊海神，Triton 就是海卫一的名字。有意思的是 Tryton 相关的软件，大多也是希腊海中诸神命名。</p>

@@ -8,10 +8,7 @@
     <meta name="google-site-verification" content="bFYi4ujLMuKmCNqh1lb0azIHJGV9rJwfmq--XRbo_tw" />
 
 	
-	<meta name="description" content="使用 VirtualBox/VMWare 复制 centos/redhat 或 debian/ubuntu 虚拟机时，如果你选择了初始化网卡MAC地址，复制之后往往会发现网络无法使用。 如执行以下命令则提示错误 1
-2
-# ifup eth0
-Device eth0 does not seem &hellip;">
+	<meta name="description" content="版权声明：自由转载-非商用-非衍生-保持署名 | Creative Commons BY-NC-ND 3.0 作者：步科 本文地址：http://buke.github.io/blog/2013/06/30/reload-the-process-when-source-chage-is- &hellip;">
 	
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
@@ -61,7 +58,7 @@ Device eth0 does not seem &hellip;">
 		<div class="container">
 			<form action="http://google.com.hk/search" method="get">
 				<input type="text" name="q" results="0">
-				<input type="hidden" name="q" value="site:buke.github.com">
+				<input type="hidden" name="q" value="site:buke.github.io">
 			</form>
 		</div>
 	</div>
@@ -85,7 +82,7 @@ Device eth0 does not seem &hellip;">
 	</div>
 	<form class="search" action="http://google.com.hk/search" method="get">
 		<input class="alignright" type="text" name="q" results="0">
-		<input type="hidden" name="q" value="site:buke.github.com">
+		<input type="hidden" name="q" value="site:buke.github.io">
 	</form>
 </nav>
 
@@ -99,11 +96,239 @@ Device eth0 does not seem &hellip;">
     <article class="post">
 	<h2 class="title">
 		
+		<a href="/blog/2013/06/30/reload-the-process-when-source-chage-is-detected/">
+		
+			修改 Python 程序自动重启进程</a>
+	</h2>
+	<div class="entry-content">
+        <div style="color:#aaaaaa;">
+            <ul>
+                <li>版权声明：自由转载-非商用-非衍生-保持署名 | <a href="http://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh">Creative Commons BY-NC-ND 3.0</a> </li>
+                <li>作者：<a href="http://buke.github.io">步科</a></li>
+                <li>本文地址：<a href="http://buke.github.io/blog/2013/06/30/reload-the-process-when-source-chage-is-detected/">http://buke.github.io/blog/2013/06/30/reload-the-process-when-source-chage-is-detected/</a></li>
+            </ul>
+        </div>
+		<p>一般来说我们的 Python 程序在运行时会自动编译为 .pyc 文件，这样可以加快 Python 程序的启动速度。但在开发调试的时，我们不得不频繁重启进程，让人不胜其烦。</p>
+
+<p>秉承“不会偷懒的程序员不是好程序员”的原则，写了个 autoreload 脚本(兼容 linux/windows)，项目开源地址 <a href="https://github.com/buke/autoreload">https://github.com/buke/autoreload</a></p>
+
+<p>完整代码如下：</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="c">#!/usr/bin/env python</span>
+</span><span class='line'><span class="c"># -*- coding: utf-8 -*-</span>
+</span><span class='line'><span class="c">##############################################################################</span>
+</span><span class='line'><span class="c">#    AutoReload Process</span>
+</span><span class='line'><span class="c">#    wangbuke &lt;wangbuke@gmail.com&gt;</span>
+</span><span class='line'><span class="c">#    taken from https://github.com/stevekrenzel/autoreload</span>
+</span><span class='line'><span class="c">#    </span>
+</span><span class='line'><span class="c">#    To use autoreload:    </span>
+</span><span class='line'><span class="c">#    1. Make sure the script is executable by running chmod +x autoreload</span>
+</span><span class='line'><span class="c">#    2. Run ./autoreload &lt;command to run and reload&gt; </span>
+</span><span class='line'><span class="c">#       e.g: $ ./autoreload openerp-server</span>
+</span><span class='line'><span class="c">#    </span>
+</span><span class='line'><span class="c">##############################################################################</span>
+</span><span class='line'>
+</span><span class='line'><span class="kn">import</span> <span class="nn">sys</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">subprocess</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">time</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">os</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">signal</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">PATH</span> <span class="o">=</span> <span class="s">&#39;.&#39;</span>
+</span><span class='line'><span class="n">WAIT</span> <span class="o">=</span> <span class="mi">1</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">start_process</span><span class="p">(</span><span class="n">cmd</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s">&#39;nt&#39;</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">process</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">else</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">process</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">preexec_fn</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">setsid</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">process</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">stop_process</span><span class="p">(</span><span class="n">process</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s">&#39;nt&#39;</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">process</span><span class="o">.</span><span class="n">kill</span><span class="p">()</span>
+</span><span class='line'>    <span class="k">else</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">os</span><span class="o">.</span><span class="n">killpg</span><span class="p">(</span><span class="n">process</span><span class="o">.</span><span class="n">pid</span><span class="p">,</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIGTERM</span><span class="p">)</span> <span class="c"># Send the signal to all the process groups</span>
+</span><span class='line'>    <span class="n">process</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">file_filter</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">return</span> <span class="p">(</span><span class="ow">not</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;.&quot;</span><span class="p">))</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&quot;.pyc&quot;</span><span class="p">))</span>  <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&quot;.pyo&quot;</span><span class="p">))</span><span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&quot;.swp&quot;</span><span class="p">))</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">file_times</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">dirs</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+</span><span class='line'>        <span class="k">for</span> <span class="nb">file</span> <span class="ow">in</span> <span class="nb">filter</span><span class="p">(</span><span class="n">file_filter</span><span class="p">,</span> <span class="n">files</span><span class="p">):</span>
+</span><span class='line'>            <span class="k">yield</span> <span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="nb">file</span><span class="p">))</span><span class="o">.</span><span class="n">st_mtime</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">def</span> <span class="nf">print_stdout</span><span class="p">(</span><span class="n">process</span><span class="p">):</span>
+</span><span class='line'>    <span class="n">stdout</span> <span class="o">=</span> <span class="n">process</span><span class="o">.</span><span class="n">stdout</span>
+</span><span class='line'>    <span class="k">if</span> <span class="n">stdout</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">:</span>
+</span><span class='line'>        <span class="k">print</span> <span class="n">stdout</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">command</span> <span class="o">=</span> <span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+</span><span class='line'>    <span class="n">process</span> <span class="o">=</span> <span class="n">start_process</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">last_mtime</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">file_times</span><span class="p">(</span><span class="n">PATH</span><span class="p">))</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+</span><span class='line'>        <span class="k">try</span><span class="p">:</span>
+</span><span class='line'>            <span class="n">print_stdout</span><span class="p">(</span><span class="n">process</span><span class="p">)</span>
+</span><span class='line'>            <span class="n">max_mtime</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">file_times</span><span class="p">(</span><span class="n">PATH</span><span class="p">))</span>
+</span><span class='line'>            <span class="k">if</span> <span class="n">max_mtime</span> <span class="o">&gt;</span> <span class="n">last_mtime</span><span class="p">:</span>
+</span><span class='line'>                <span class="n">last_mtime</span> <span class="o">=</span> <span class="n">max_mtime</span>
+</span><span class='line'>                <span class="k">print</span> <span class="s">&#39;Restarting process...&#39;</span>
+</span><span class='line'>                <span class="n">stop_process</span><span class="p">(</span><span class="n">process</span><span class="p">)</span>
+</span><span class='line'>                <span class="n">process</span> <span class="o">=</span> <span class="n">start_process</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
+</span><span class='line'>            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">WAIT</span><span class="p">)</span>
+</span><span class='line'>        <span class="k">except</span> <span class="p">(</span><span class="ne">KeyboardInterrupt</span><span class="p">,</span> <span class="ne">SystemExit</span><span class="p">):</span>
+</span><span class='line'>                <span class="k">print</span> <span class="s">&quot;Caught KeyboardInterrupt, terminating process&quot;</span>
+</span><span class='line'>                <span class="n">stop_process</span><span class="p">(</span><span class="n">process</span><span class="p">)</span>
+</span><span class='line'>                <span class="k">break</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>可配置参数：
+* PATH = &#8216;.&#8217; #默认为 autoreload 文件所在的当前目录。
+* WAIT = 1 # 默认扫描间隔，单位秒</p>
+
+<p>用法:
+1、修改该文件为可执行脚步 (windows 下执行 python autoreload)</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ chomd +x ./autorelaod</span></code></pre></td></tr></table></div></figure>
+
+
+<p>2、运行</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ ./autoreload "openerp-server -c openerp-server.conf"</span></code></pre></td></tr></table></div></figure>
+
+
+<p>项目开源地址 <a href="https://github.com/buke/autoreload">https://github.com/buke/autoreload</a> ,  如有意见或建议请到上面地址提交反馈。谢谢！</p>
+
+		
+		
+	</div>
+
+
+<div class="meta">
+	<div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-06-30T22:49:00+08:00" pubdate data-updated="true">Jun 30<span>th</span>, 2013</time></div>
+	<div class="tags">
+
+
+	<a class='category' href='/blog/categories/linux/'>Linux</a>
+
+
+</div>
+	
+
+	<span class="comments"><a id="uyan_count_unit" href="/blog/2013/06/30/reload-the-process-when-source-chage-is-detected/#uyan_frame">0条评论</a><script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=1743843"></script></span>
+
+</div>
+</article>
+
+
+    <article class="post">
+	<h2 class="title">
+		
 		<a href="/blog/2013/06/27/fix-eth0-network-interface-when-cloning-centos-slash-redhat-or-debian-slash-ubuntu-virtual-machines-using-virtualbox-or-vmware/">
 		
 			复制 Virtualbox/vmware Linux虚拟机网络无法访问错误的解决方法</a>
 	</h2>
 	<div class="entry-content">
+        <div style="color:#aaaaaa;">
+            <ul>
+                <li>版权声明：自由转载-非商用-非衍生-保持署名 | <a href="http://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh">Creative Commons BY-NC-ND 3.0</a> </li>
+                <li>作者：<a href="http://buke.github.io">步科</a></li>
+                <li>本文地址：<a href="http://buke.github.io/blog/2013/06/27/fix-eth0-network-interface-when-cloning-centos-slash-redhat-or-debian-slash-ubuntu-virtual-machines-using-virtualbox-or-vmware/">http://buke.github.io/blog/2013/06/27/fix-eth0-network-interface-when-cloning-centos-slash-redhat-or-debian-slash-ubuntu-virtual-machines-using-virtualbox-or-vmware/</a></li>
+            </ul>
+        </div>
 		<p>使用 VirtualBox/VMWare 复制 centos/redhat 或 debian/ubuntu 虚拟机时，如果你选择了初始化网卡MAC地址，复制之后往往会发现网络无法使用。</p>
 
 <p>如执行以下命令则提示错误</p>
@@ -139,8 +364,6 @@ Device eth0 does not seem &hellip;">
 
 
 <p>完成！</p>
-
-<p>转载请保留作者信息及注明出处 <a href="http://buke.github.io/blog/2013/06/27/fix-eth0-network-interface-when-cloning-centos-slash-redhat-or-debian-slash-ubuntu-virtual-machines-using-virtualbox-or-vmware/">http://buke.github.io/blog/2013/06/27/fix-eth0-network-interface-when-cloning-centos-slash-redhat-or-debian-slash-ubuntu-virtual-machines-using-virtualbox-or-vmware/</a></p>
 
 		
 		
@@ -184,6 +407,13 @@ Device eth0 does not seem &hellip;">
 			使用 Eclipse Pydev 调试 GreenOpenERP for Windows</a>
 	</h2>
 	<div class="entry-content">
+        <div style="color:#aaaaaa;">
+            <ul>
+                <li>版权声明：自由转载-非商用-非衍生-保持署名 | <a href="http://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh">Creative Commons BY-NC-ND 3.0</a> </li>
+                <li>作者：<a href="http://buke.github.io">步科</a></li>
+                <li>本文地址：<a href="http://buke.github.io/blog/2013/06/27/using-eclipse-pydev-to-debug-green-openerp-for-windows/">http://buke.github.io/blog/2013/06/27/using-eclipse-pydev-to-debug-green-openerp-for-windows/</a></li>
+            </ul>
+        </div>
 		<h2>关于 GreenOpenERP</h2>
 
 <p>OpenERP 绿色版 For Windows，源码运行，解压即用，集成 python/postgresql/openerp</p>
@@ -267,8 +497,6 @@ Device eth0 does not seem &hellip;">
 </ul>
 
 
-<p>转载请保留作者信息及注明出处 <a href="http://buke.github.io/blog/2013/06/27/using-eclipse-pydev-to-debug-green-openerp-for-windows/">http://buke.github.io/blog/2013/06/27/using-eclipse-pydev-to-debug-green-openerp-for-windows/</a> 。</p>
-
 		
 		
 	</div>
@@ -311,6 +539,13 @@ Device eth0 does not seem &hellip;">
 			Openerp 使用 Postgresql 存储过程和视图</a>
 	</h2>
 	<div class="entry-content">
+        <div style="color:#aaaaaa;">
+            <ul>
+                <li>版权声明：自由转载-非商用-非衍生-保持署名 | <a href="http://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh">Creative Commons BY-NC-ND 3.0</a> </li>
+                <li>作者：<a href="http://buke.github.io">步科</a></li>
+                <li>本文地址：<a href="http://buke.github.io/blog/2013/04/22/openerp-postgresql-stored-procedure-and-view/">http://buke.github.io/blog/2013/04/22/openerp-postgresql-stored-procedure-and-view/</a></li>
+            </ul>
+        </div>
 		<p>OpenERP 使用 postgresql 存储过程和试图，步骤如下：</p>
 
 <p>STEP1: 在模块的 init 函数中定义存储过程</p>
@@ -468,6 +703,13 @@ Device eth0 does not seem &hellip;">
 			GreenOpenERP &#8211; 绿色版 OpenERP for Windows</a>
 	</h2>
 	<div class="entry-content">
+        <div style="color:#aaaaaa;">
+            <ul>
+                <li>版权声明：自由转载-非商用-非衍生-保持署名 | <a href="http://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh">Creative Commons BY-NC-ND 3.0</a> </li>
+                <li>作者：<a href="http://buke.github.io">步科</a></li>
+                <li>本文地址：<a href="http://buke.github.io/blog/2013/03/10/greenopenerp-portable-openerp-for-windows/">http://buke.github.io/blog/2013/03/10/greenopenerp-portable-openerp-for-windows/</a></li>
+            </ul>
+        </div>
 		<p>OpenERP 绿色版 For Windows，源码运行，解压即用，集成 python/postgresql/openerp。</p>
 
 <h2>软件版本</h2>
@@ -497,7 +739,7 @@ Device eth0 does not seem &hellip;">
 
 <p><a href="http://sourceforge.net/projects/greenopenerp/files/">http://sourceforge.net/projects/greenopenerp/files/</a></p>
 
-<p>作者: wangbuke <a href="&#109;&#x61;&#x69;&#x6c;&#x74;&#x6f;&#58;&#119;&#x61;&#110;&#x67;&#x62;&#x75;&#107;&#101;&#64;&#103;&#109;&#x61;&#105;&#x6c;&#46;&#x63;&#111;&#109;">&#119;&#x61;&#110;&#103;&#98;&#117;&#x6b;&#x65;&#x40;&#103;&#109;&#97;&#x69;&#108;&#x2e;&#x63;&#111;&#109;</a></p>
+<p>作者: wangbuke <a href="&#x6d;&#x61;&#x69;&#x6c;&#116;&#111;&#x3a;&#119;&#x61;&#x6e;&#103;&#x62;&#x75;&#x6b;&#101;&#x40;&#103;&#109;&#x61;&#x69;&#x6c;&#46;&#99;&#x6f;&#x6d;">&#119;&#97;&#x6e;&#x67;&#98;&#x75;&#107;&#x65;&#64;&#x67;&#109;&#97;&#105;&#108;&#x2e;&#x63;&#111;&#109;</a></p>
 
 <p>博客: http://buke.github.com/</p>
 
@@ -547,6 +789,13 @@ Device eth0 does not seem &hellip;">
 			OpenERP 模块动态加载原理及启动代码分析</a>
 	</h2>
 	<div class="entry-content">
+        <div style="color:#aaaaaa;">
+            <ul>
+                <li>版权声明：自由转载-非商用-非衍生-保持署名 | <a href="http://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh">Creative Commons BY-NC-ND 3.0</a> </li>
+                <li>作者：<a href="http://buke.github.io">步科</a></li>
+                <li>本文地址：<a href="http://buke.github.io/blog/2013/02/26/openerp-dynamic-loading-and-booting-way/">http://buke.github.io/blog/2013/02/26/openerp-dynamic-loading-and-booting-way/</a></li>
+            </ul>
+        </div>
 		<p>一般来说我们在编程中，对象定义都是预先定义好的。一些 OOP 语言（包括 Python/Java）允许对象是 自省的（也称为 反射）。即，自省对象能够描述自己：实例属于哪个类？类有哪些祖先？对象可以用哪些方法和属性？自省让处理对象的函数或方法根据传递给函数或方法的对象类型来做决定。即允许对象在运行时动态改变方法成员等属性。</p>
 
 <p>得益于OpenERP ORM 模型的精巧设计，实际上 OpenERP 运行时也是动态读取模块信息并动态构建对象的。如在模块开发中，继承了 &#8216;res.users&#8217;, 新增一个方法或新增一个字段。在OpenERP 导入该模块后， OpenERP 会马上重构 &#8216;res.users&#8217; 对象并将新增的方法或字段添加到该对象。那么，OpenERP 是如何做到这点的呢？ 让我们从OpenERP 的启动部分开始分析：</p>
@@ -1225,6 +1474,13 @@ Device eth0 does not seem &hellip;">
 			Openerp Web PDF Report Preview &amp; Print 模块升级至 7.0</a>
 	</h2>
 	<div class="entry-content">
+        <div style="color:#aaaaaa;">
+            <ul>
+                <li>版权声明：自由转载-非商用-非衍生-保持署名 | <a href="http://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh">Creative Commons BY-NC-ND 3.0</a> </li>
+                <li>作者：<a href="http://buke.github.io">步科</a></li>
+                <li>本文地址：<a href="http://buke.github.io/blog/2013/02/22/openerp-web-pdf-report-preview-and-print-update-7-dot-0/">http://buke.github.io/blog/2013/02/22/openerp-web-pdf-report-preview-and-print-update-7-dot-0/</a></li>
+            </ul>
+        </div>
 		<p>Openerp Web PDF Report Preview &amp; Print</p>
 
 <p>下载地址： <a href="https://github.com/buke/openerp-web-pdf-preview-print">https://github.com/buke/openerp-web-pdf-preview-print</a></p>
@@ -1309,6 +1565,13 @@ Device eth0 does not seem &hellip;">
 			Tryton 相关软件简介及名字背后的神话</a>
 	</h2>
 	<div class="entry-content">
+        <div style="color:#aaaaaa;">
+            <ul>
+                <li>版权声明：自由转载-非商用-非衍生-保持署名 | <a href="http://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh">Creative Commons BY-NC-ND 3.0</a> </li>
+                <li>作者：<a href="http://buke.github.io">步科</a></li>
+                <li>本文地址：<a href="http://buke.github.io/blog/2013/01/28/trytons-name-and-myth-introdution/">http://buke.github.io/blog/2013/01/28/trytons-name-and-myth-introdution/</a></li>
+            </ul>
+        </div>
 		<p>Tryton 是一个MVC三层架构、高性能的通用应用ERP平台，基于 GPL-3 协议发布。其主要特点是模块化设计、可扩展性和安全。2008 年，Tryton 从 TinyERP  4.2 分支fork，并发布了1.0版本。不过到现在为止，Tryton 基本上重构了全部底层代码。到2012年9月，Tryton 已推出 2.6 版本。</p>
 
 <p>Tryton的名字来源于Triton，传说中Triton是希腊神话中海之信使，海王波塞冬和海后安菲特里忒的儿子。另外海王星的命名体系也是来源于希腊海神，Triton 就是海卫一的名字。有意思的是 Tryton 相关的软件，大多也是希腊海中诸神命名。</p>
@@ -1450,6 +1713,13 @@ Device eth0 does not seem &hellip;">
 			OpenERP 负载平衡</a>
 	</h2>
 	<div class="entry-content">
+        <div style="color:#aaaaaa;">
+            <ul>
+                <li>版权声明：自由转载-非商用-非衍生-保持署名 | <a href="http://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh">Creative Commons BY-NC-ND 3.0</a> </li>
+                <li>作者：<a href="http://buke.github.io">步科</a></li>
+                <li>本文地址：<a href="http://buke.github.io/blog/2013/01/21/openerp-load-balance/">http://buke.github.io/blog/2013/01/21/openerp-load-balance/</a></li>
+            </ul>
+        </div>
 		<p> OpenERP 7.0 带来了许多新特性，架构上也有许多改进。其中可配置 worker 参数，可使 OpenERP 运行在多进程模式，突破GIL的限制，有效利用了现代多核CPU的性能。但默认情况下，OpenERP 只能运行于一台服务器，对于提供SAAS服务或并发很大的情况下，单台服务器的性能是有限的。本文介绍实现 OpenERP 负载平衡的方法和原理。</p>
 
 <p>一、架构</p>
@@ -1658,6 +1928,13 @@ Device eth0 does not seem &hellip;">
 			OpenERP 自动编码去BOM（可用excel编辑）</a>
 	</h2>
 	<div class="entry-content">
+        <div style="color:#aaaaaa;">
+            <ul>
+                <li>版权声明：自由转载-非商用-非衍生-保持署名 | <a href="http://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh">Creative Commons BY-NC-ND 3.0</a> </li>
+                <li>作者：<a href="http://buke.github.io">步科</a></li>
+                <li>本文地址：<a href="http://buke.github.io/blog/2012/09/05/openerp-web-import-chardet/">http://buke.github.io/blog/2012/09/05/openerp-web-import-chardet/</a></li>
+            </ul>
+        </div>
 		<p>openerp-web-import-chardet</p>
 
 <p>作者：wangbuke@gmail.com</p>
@@ -1722,90 +1999,6 @@ Device eth0 does not seem &hellip;">
 	
 
 	<span class="comments"><a id="uyan_count_unit" href="/blog/2012/09/05/openerp-web-import-chardet/#uyan_frame">0条评论</a><script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=1743843"></script></span>
-
-</div>
-</article>
-
-
-    <article class="post">
-	<h2 class="title">
-		
-		<a href="/blog/2012/08/19/openerp-pychart-unicode-report/">
-		
-			OpenERP PyChart 中文报表模块（支持CJK语言）</a>
-	</h2>
-	<div class="entry-content">
-		<p>OpenERP PyChart Unicode Report (Support CJK Font)</p>
-
-<p>作者：wangbuke@gmail.com</p>
-
-<p>源码托管地址：https://github.com/buke/openerp-pychart-unicode-report</p>
-
-<p>OpenERP 官方APP下载地址： http://apps.openerp.com/addon/8009</p>
-
-<p>支持pychart中文报表，如“库存预测”、“工作中心负载” 等报表。</p>
-
-<h1>模块原理</h1>
-
-<p>让pychart 生成svg 文件，然后用cairosvg 模块生成PDF报表。</p>
-
-<h1>依赖模块</h1>
-
-<p>python-cairo python-cairosvg</p>
-
-<p>Debian/Ubuntu安装方法： $ su apt-get install python-cairo python-cairosvg</p>
-
-<h1>安装与设置</h1>
-
-<h2>1、安装字体</h2>
-
-<p>复制您所用的字体文件，如simsun.ttc 到系统目录下。</p>
-
-<p>debian/ubuntu: $ sudo cp simsun.ttc /usr/share/fonts</p>
-
-<p>windows :  C:> copy simsun.ttc  c:/windows/fonts</p>
-
-<h3>2、配置pychart 报表字体 默认使用宋体</h3>
-
-<p>修改openerp 配置文件 openerp-server.conf , 添加以下参数：</p>
-
-<p>pychart_ttfont_name = Simsun</p>
-
-<p>注：默认是宋体，如使用默认值则无需修改 conf 文件</p>
-
-<p>祝你好运 ~</p>
-
-<p><img src="/images/my/oe-pychart-report.jpg"></p>
-
-		
-		
-	</div>
-
-
-<div class="meta">
-	<div class="date">
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-08-19T15:44:00+08:00" pubdate data-updated="true">Aug 19<span>th</span>, 2012</time></div>
-	<div class="tags">
-
-
-	<a class='category' href='/blog/categories/openerp/'>OpenERP</a>
-
-
-</div>
-	
-
-	<span class="comments"><a id="uyan_count_unit" href="/blog/2012/08/19/openerp-pychart-unicode-report/#uyan_frame">0条评论</a><script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=1743843"></script></span>
 
 </div>
 </article>

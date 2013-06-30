@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
   <title><![CDATA[Category: Linux | 步科 的博客]]></title>
-  <link href="http://buke.github.com/blog/categories/linux/atom.xml" rel="self"/>
-  <link href="http://buke.github.com/"/>
-  <updated>2013-06-29T18:30:45+08:00</updated>
-  <id>http://buke.github.com/</id>
+  <link href="http://buke.github.io/blog/categories/linux/atom.xml" rel="self"/>
+  <link href="http://buke.github.io/"/>
+  <updated>2013-07-01T00:33:33+08:00</updated>
+  <id>http://buke.github.io/</id>
   <author>
     <name><![CDATA[步科]]></name>
     
@@ -14,10 +14,238 @@
 
   
   <entry>
+    <title type="html"><![CDATA[修改 python 程序自动重启进程]]></title>
+    <link href="http://buke.github.io/blog/2013/06/30/reload-the-process-when-source-chage-is-detected/"/>
+    <updated>2013-06-30T22:49:00+08:00</updated>
+    <id>http://buke.github.io/blog/2013/06/30/reload-the-process-when-source-chage-is-detected</id>
+    <content type="html"><![CDATA[<p>一般来说我们的 Python 程序在运行时会自动编译为 .pyc 文件，这样可以加快 Python 程序的启动速度。但在开发调试的时，我们不得不频繁重启进程，让人不胜其烦。</p>
+
+<p>秉承“不会偷懒的程序员不是好程序员”的原则，写了个 autoreload 脚本(兼容 linux/windows)，项目开源地址 <a href="https://github.com/buke/autoreload">https://github.com/buke/autoreload</a></p>
+
+<p>完整代码如下：</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+<span class='line-number'>73</span>
+<span class='line-number'>74</span>
+<span class='line-number'>75</span>
+<span class='line-number'>76</span>
+<span class='line-number'>77</span>
+<span class='line-number'>78</span>
+<span class='line-number'>79</span>
+<span class='line-number'>80</span>
+<span class='line-number'>81</span>
+<span class='line-number'>82</span>
+<span class='line-number'>83</span>
+<span class='line-number'>84</span>
+<span class='line-number'>85</span>
+<span class='line-number'>86</span>
+<span class='line-number'>87</span>
+<span class='line-number'>88</span>
+<span class='line-number'>89</span>
+<span class='line-number'>90</span>
+<span class='line-number'>91</span>
+<span class='line-number'>92</span>
+<span class='line-number'>93</span>
+<span class='line-number'>94</span>
+<span class='line-number'>95</span>
+<span class='line-number'>96</span>
+<span class='line-number'>97</span>
+<span class='line-number'>98</span>
+<span class='line-number'>99</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">h1</span><span class="o">&gt;</span><span class="err">!</span><span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">env</span> <span class="n">python</span><span class="o">&lt;/</span><span class="n">h1</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">h1</span><span class="o">&gt;-&lt;</span><span class="n">em</span><span class="o">&gt;-</span> <span class="n">coding</span><span class="p">:</span> <span class="n">utf</span><span class="o">-</span><span class="mi">8</span> <span class="o">-&lt;/</span><span class="n">em</span><span class="o">&gt;-&lt;/</span><span class="n">h1</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">h6</span><span class="o">&gt;</span><span class="c">#&lt;/h6&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">h1</span><span class="o">&gt;</span><span class="n">AutoReload</span> <span class="n">Process</span><span class="o">&lt;/</span><span class="n">h1</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">h1</span><span class="o">&gt;</span><span class="n">wangbuke</span> <span class="o">&lt;</span><span class="n">a</span> <span class="n">href</span><span class="o">=</span><span class="s">&quot;&amp;#x6d;&amp;#97;&amp;#105;&amp;#x6c;&amp;#x74;&amp;#x6f;&amp;#58;&amp;#x77;&amp;#97;&amp;#x6e;&amp;#x67;&amp;#x62;&amp;#117;&amp;#107;&amp;#x65;&amp;#64;&amp;#x67;&amp;#x6d;&amp;#x61;&amp;#x69;&amp;#108;&amp;#46;&amp;#99;&amp;#111;&amp;#109;&quot;</span><span class="o">&gt;&amp;</span><span class="c">#x77;&amp;#x61;&amp;#110;&amp;#x67;&amp;#98;&amp;#117;&amp;#107;&amp;#101;&amp;#x40;&amp;#x67;&amp;#109;&amp;#97;&amp;#x69;&amp;#x6c;&amp;#46;&amp;#x63;&amp;#111;&amp;#x6d;&lt;/a&gt;&lt;/h1&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">h1</span><span class="o">&gt;</span><span class="n">taken</span> <span class="kn">from</span> <span class="nn">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">stevekrenzel</span><span class="o">/</span><span class="n">autoreload</span><span class="o">&lt;/</span><span class="n">h1</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">h1</span><span class="o">&gt;&lt;/</span><span class="n">h1</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">h1</span><span class="o">&gt;</span><span class="n">To</span> <span class="n">use</span> <span class="n">autoreload</span><span class="p">:</span><span class="o">&lt;/</span><span class="n">h1</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">h1</span><span class="o">&gt;</span><span class="mf">1.</span> <span class="n">Make</span> <span class="n">sure</span> <span class="n">the</span> <span class="n">script</span> <span class="ow">is</span> <span class="n">executable</span> <span class="n">by</span> <span class="n">running</span> <span class="n">chmod</span> <span class="o">+</span><span class="n">x</span> <span class="n">autoreload</span><span class="o">&lt;/</span><span class="n">h1</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">h1</span><span class="o">&gt;</span><span class="mf">2.</span> <span class="n">Run</span> <span class="o">./</span><span class="n">autoreload</span> <span class="o">&lt;</span><span class="n">command</span> <span class="n">to</span> <span class="n">run</span> <span class="ow">and</span> <span class="nb">reload</span><span class="o">&gt;&lt;/</span><span class="n">h1</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">h1</span><span class="o">&gt;</span><span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="p">:</span> <span class="err">$</span> <span class="o">./</span><span class="n">autoreload</span> <span class="n">openerp</span><span class="o">-</span><span class="n">server</span><span class="o">&lt;/</span><span class="n">h1</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">h1</span><span class="o">&gt;&lt;/</span><span class="n">h1</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">h6</span><span class="o">&gt;</span><span class="c">#&lt;/h6&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="kn">import</span> <span class="nn">sys</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">subprocess</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">time</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">os</span>
+</span><span class='line'><span class="kn">import</span> <span class="nn">signal</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">PATH</span> <span class="o">=</span> <span class="s">&#39;.&#39;</span>
+</span><span class='line'><span class="n">WAIT</span> <span class="o">=</span> <span class="mi">1</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">start_process</span><span class="p">(</span><span class="n">cmd</span><span class="p">):</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s">&#39;nt&#39;</span><span class="p">:</span>
+</span><span class='line'>    <span class="n">process</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</span><span class='line'><span class="k">else</span><span class="p">:</span>
+</span><span class='line'>    <span class="n">process</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">preexec_fn</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">setsid</span><span class="p">)</span>
+</span><span class='line'><span class="k">return</span> <span class="n">process</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">stop_process</span><span class="p">(</span><span class="n">process</span><span class="p">):</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s">&#39;nt&#39;</span><span class="p">:</span>
+</span><span class='line'>    <span class="n">process</span><span class="o">.</span><span class="n">kill</span><span class="p">()</span>
+</span><span class='line'><span class="k">else</span><span class="p">:</span>
+</span><span class='line'>    <span class="n">os</span><span class="o">.</span><span class="n">killpg</span><span class="p">(</span><span class="n">process</span><span class="o">.</span><span class="n">pid</span><span class="p">,</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIGTERM</span><span class="p">)</span> <span class="c"># Send the signal to all the process groups</span>
+</span><span class='line'><span class="n">process</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">file_filter</span><span class="p">(</span><span class="n">name</span><span class="p">):</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="k">return</span> <span class="p">(</span><span class="ow">not</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;.&quot;</span><span class="p">))</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&quot;.pyc&quot;</span><span class="p">))</span>  <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&quot;.pyo&quot;</span><span class="p">))</span><span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&quot;.swp&quot;</span><span class="p">))</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">file_times</span><span class="p">(</span><span class="n">path</span><span class="p">):</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">dirs</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+</span><span class='line'>    <span class="k">for</span> <span class="nb">file</span> <span class="ow">in</span> <span class="nb">filter</span><span class="p">(</span><span class="n">file_filter</span><span class="p">,</span> <span class="n">files</span><span class="p">):</span>
+</span><span class='line'>        <span class="k">yield</span> <span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="nb">file</span><span class="p">))</span><span class="o">.</span><span class="n">st_mtime</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">print_stdout</span><span class="p">(</span><span class="n">process</span><span class="p">):</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">stdout</span> <span class="o">=</span> <span class="n">process</span><span class="o">.</span><span class="n">stdout</span>
+</span><span class='line'><span class="k">if</span> <span class="n">stdout</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">:</span>
+</span><span class='line'>    <span class="k">print</span> <span class="n">stdout</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">if</span> <span class="o">&lt;</span><span class="n">strong</span><span class="o">&gt;</span><span class="n">name</span><span class="o">&lt;/</span><span class="n">strong</span><span class="o">&gt;</span> <span class="o">==</span> <span class="s">&quot;&lt;strong&gt;main&lt;/strong&gt;&quot;</span><span class="p">:</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">command</span> <span class="o">=</span> <span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+</span><span class='line'><span class="n">process</span> <span class="o">=</span> <span class="n">start_process</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
+</span><span class='line'><span class="n">last_mtime</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">file_times</span><span class="p">(</span><span class="n">PATH</span><span class="p">))</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+</span><span class='line'>    <span class="k">try</span><span class="p">:</span>
+</span><span class='line'>        <span class="n">print_stdout</span><span class="p">(</span><span class="n">process</span><span class="p">)</span>
+</span><span class='line'>        <span class="n">max_mtime</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">file_times</span><span class="p">(</span><span class="n">PATH</span><span class="p">))</span>
+</span><span class='line'>        <span class="k">if</span> <span class="n">max_mtime</span> <span class="o">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">last_mtime</span><span class="p">:</span>
+</span><span class='line'>            <span class="n">last_mtime</span> <span class="o">=</span> <span class="n">max_mtime</span>
+</span><span class='line'>            <span class="k">print</span> <span class="s">&#39;Restarting process...&#39;</span>
+</span><span class='line'>            <span class="n">stop_process</span><span class="p">(</span><span class="n">process</span><span class="p">)</span>
+</span><span class='line'>            <span class="n">process</span> <span class="o">=</span> <span class="n">start_process</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
+</span><span class='line'>        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">WAIT</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">except</span> <span class="p">(</span><span class="ne">KeyboardInterrupt</span><span class="p">,</span> <span class="ne">SystemExit</span><span class="p">):</span>
+</span><span class='line'>            <span class="k">print</span> <span class="s">&quot;Caught KeyboardInterrupt, terminating process&quot;</span>
+</span><span class='line'>            <span class="n">stop_process</span><span class="p">(</span><span class="n">process</span><span class="p">)</span>
+</span><span class='line'>            <span class="k">break</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">h1</span><span class="o">&gt;</span><span class="n">vim</span><span class="p">:</span><span class="n">expandtab</span><span class="p">:</span><span class="n">smartindent</span><span class="p">:</span><span class="n">tabstop</span><span class="o">=</span><span class="mi">4</span><span class="p">:</span><span class="n">softtabstop</span><span class="o">=</span><span class="mi">4</span><span class="p">:</span><span class="n">shiftwidth</span><span class="o">=</span><span class="mi">4</span><span class="p">:</span><span class="o">&lt;/</span><span class="n">h1</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>可配置参数：
+* PATH = '.' #默认为 autoreload 文件所在的当前目录。
+* WAIT = 1 # 默认扫描间隔，单位秒</p>
+
+<p>用法:
+1、修改该文件为可执行脚步 (windows 下执行 python autoreload)
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ chomd +x ./autorelaod</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>2、运行
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ ./autoreload "openerp-server -c openerp-server.conf"</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>项目开源地址 <a href="https://github.com/buke/autoreload">https://github.com/buke/autoreload</a> ,  如有意见或建议请到上面地址提交反馈。谢谢！</p>
+]]></content>
+  </entry>
+  
+  <entry>
     <title type="html"><![CDATA[复制 Virtualbox/vmware linux虚拟机网络无法访问错误的解决方法]]></title>
-    <link href="http://buke.github.com/blog/2013/06/27/fix-eth0-network-interface-when-cloning-centos-slash-redhat-or-debian-slash-ubuntu-virtual-machines-using-virtualbox-or-vmware/"/>
+    <link href="http://buke.github.io/blog/2013/06/27/fix-eth0-network-interface-when-cloning-centos-slash-redhat-or-debian-slash-ubuntu-virtual-machines-using-virtualbox-or-vmware/"/>
     <updated>2013-06-27T16:36:00+08:00</updated>
-    <id>http://buke.github.com/blog/2013/06/27/fix-eth0-network-interface-when-cloning-centos-slash-redhat-or-debian-slash-ubuntu-virtual-machines-using-virtualbox-or-vmware</id>
+    <id>http://buke.github.io/blog/2013/06/27/fix-eth0-network-interface-when-cloning-centos-slash-redhat-or-debian-slash-ubuntu-virtual-machines-using-virtualbox-or-vmware</id>
     <content type="html"><![CDATA[<p>使用 VirtualBox/VMWare 复制 centos/redhat 或 debian/ubuntu 虚拟机时，如果你选择了初始化网卡MAC地址，复制之后往往会发现网络无法使用。</p>
 
 <p>如执行以下命令则提示错误</p>
@@ -74,8 +302,6 @@
 </span><span class='line'>&lt;p></span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>完成！</p>
-
-<p>转载请保留作者信息及注明出处 <a href="http://buke.github.io/blog/2013/06/27/fix-eth0-network-interface-when-cloning-centos-slash-redhat-or-debian-slash-ubuntu-virtual-machines-using-virtualbox-or-vmware/">http://buke.github.io/blog/2013/06/27/fix-eth0-network-interface-when-cloning-centos-slash-redhat-or-debian-slash-ubuntu-virtual-machines-using-virtualbox-or-vmware/</a></p>
 ]]></content>
   </entry>
   

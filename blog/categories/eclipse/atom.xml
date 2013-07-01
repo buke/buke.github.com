@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Eclipse | 步科 的博客]]></title>
+  <link href="http://buke.github.io/blog/categories/eclipse/atom.xml" rel="self"/>
+  <link href="http://buke.github.io/"/>
+  <updated>2013-07-01T17:57:36+08:00</updated>
+  <id>http://buke.github.io/</id>
+  <author>
+    <name><![CDATA[步科]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[使用 Eclipse Pydev 调试 GreenOpenERP For Windows]]></title>
+    <link href="http://buke.github.io/blog/2013/06/27/using-eclipse-pydev-to-debug-green-openerp-for-windows/"/>
+    <updated>2013-06-27T13:32:00+08:00</updated>
+    <id>http://buke.github.io/blog/2013/06/27/using-eclipse-pydev-to-debug-green-openerp-for-windows</id>
+    <content type="html"><![CDATA[<h2>关于 GreenOpenERP</h2>
+
+<p>OpenERP 绿色版 For Windows，源码运行，解压即用，集成 python/postgresql/openerp</p>
+
+<p>相关介绍和下载，请看 <a href="http://buke.github.io/blog/2013/03/10/greenopenerp-portable-openerp-for-windows/">http://buke.github.io/blog/2013/03/10/greenopenerp-portable-openerp-for-windows/</a></p>
+
+<h2>关于 Eclipse 和 Pydev</h2>
+
+<p>Eclipse, 请到<a href="http://www.eclipse.org/">http://www.eclipse.org/</a> 下载安装。</p>
+
+<p>Pydev, 请到<a href="http://pydev.org/">http://pydev.org/</a> 下载安装。(推荐使用eclipse 在线安装 pydev，打开eclipse 后，点击菜单 “help” -> "Install New Software", 输入 “http://pydev.org/updates” 刷新后选择 pydev 安装即可。)</p>
+
+<h2>源码调试 GreenOpenERP</h2>
+
+<p>此处假设您已经安装好 Eclipse 和 Pydev，并可以正确运行。</p>
+
+<h3>1、下载 GreenOpenERP</h3>
+
+<p>从<a href="http://sourceforge.net/projects/greenopenerp/files/">http://sourceforge.net/projects/greenopenerp/files/</a> 下载并解压 GreenOpenERP-7.0-xxxxxxxx-xxxxxx</p>
+
+<h3>2、配置 pydev 的 python interpreters</h3>
+
+<p>打开 eclipse ， 选择菜单 “Window” -> "Preferences"</p>
+
+<p><img src="/images/my/pydev-0.png"></p>
+
+<p>点击 pydev，选择 Interpreter - Python , 如有旧的Interpreter 请先删除。点击 New ，在弹出的窗口中 Browse 到下载解压的 GreenOpenERP-7.0-xxxxxxxx-xxxxxx\python\python.exe</p>
+
+<p><img src="/images/my/pydev-1.png"></p>
+
+<p>选择 Select All， 然后点击 OK</p>
+
+<p><img src="/images/my/pydev-2.png"></p>
+
+<p>回到刚才窗口， python interpreters 的相关参数应已配好。点击 Apply 后，点 Ok</p>
+
+<p><img src="/images/my/pydev-3.png"></p>
+
+<h3>3、选择 pydev 开发界面。</h3>
+
+<p>Eclipse 默认是 java 开发界面，点击右上角的小图表，在弹出的窗口选择 pydev</p>
+
+<p><img src="/images/my/pydev-4.png"></p>
+
+<h3>4、导入 GreenOpenERP Project</h3>
+
+<p>在 Package Explorer 界面内点击右键，在弹出的菜单里选择 Import</p>
+
+<p><img src="/images/my/pydev-5.png"></p>
+
+<p>选择 Existing Project into Workspace 后，点 Next</p>
+
+<p><img src="/images/my/pydev-6.png"></p>
+
+<p>点击 Browse 后，选择解压后的 GreenOpenERP 文件夹, 随后点击 Finish</p>
+
+<p><img src="/images/my/pydev-7.png"></p>
+
+<h3>5、启动 Postgresql</h3>
+
+<p>运行 GreenOpenERP 文件夹的 start-pg.bat 启动 pg 数据库。（关闭pg 数据库则运行 stop-pg.bat）</p>
+
+<h3>6、启动调试</h3>
+
+<p>在相应文件设置好断点后（也可不设置断点），在 eclipse 的 Package Explorer 界面右键点击 openerp-server, 在弹出菜单选择 Debug As -> Python Run</p>
+
+<p><img src="/images/my/pydev-8.png"></p>
+
+<h3>7、完成</h3>
+
+<p>送断点调试界面图一张</p>
+
+<p><img src="/images/my/pydev-9.png"></p>
+
+<h3>8、注意事项</h3>
+
+<ul>
+<li>调试前需运行 start-pg.bat 启动数据库。</li>
+<li>如需关闭数据库，请运行 stop-pg.bat 关闭。切勿直接关闭cmd窗口。</li>
+<li>正常运行(非调试)和关闭 GreenOpenERP，请运行 start.bat 和 stop.bat .</li>
+</ul>
+
+]]></content>
+  </entry>
+  
+</feed>

@@ -4,7 +4,7 @@
   <title><![CDATA[Category: OpenERP | 步科 的博客]]></title>
   <link href="http://buke.github.io/blog/categories/openerp/atom.xml" rel="self"/>
   <link href="http://buke.github.io/"/>
-  <updated>2013-07-01T17:57:36+08:00</updated>
+  <updated>2014-04-11T12:33:16+08:00</updated>
   <id>http://buke.github.io/</id>
   <author>
     <name><![CDATA[步科]]></name>
@@ -12,6 +12,44 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[OpenERP 邮件发送问题修复 -- 解决 qq/163 等邮箱发送失败问题]]></title>
+    <link href="http://buke.github.io/blog/2014/04/11/openerp-send-mail-header-fixed/"/>
+    <updated>2014-04-11T11:24:00+08:00</updated>
+    <id>http://buke.github.io/blog/2014/04/11/openerp-send-mail-header-fixed</id>
+    <content type="html"><![CDATA[<p>openerp-mail-server-smtp-user</p>
+
+<p>Fixed email from header.修复OpenERP 邮件头From 格式错误。</p>
+
+<p>默认情况下，OpenERP 打包邮件时, 直接使用 email from 作为邮件头的 From 值。如qq/163等邮箱会严格校验email from 和 发件人帐号是否一致，如不一致则返回发送失败。如以下情况：</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>OE 默认情况
+</span><span class='line'>发件人为： admin@ex.com
+</span><span class='line'>发送账户为：11111@qq.com&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;p>OE 打包邮件内容为 email['From'] == 'admin@ex.com' (qq/163 校验失败)&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;p>安装本模块后：
+</span><span class='line'>发件人为： admin@ex.com
+</span><span class='line'>发送账户为：11111@qq.com&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;p>OE 打包邮件内容为 email['From'] == 'admin@ex.com &lt;a href="&#x6d;&#x61;&#x69;&#x6c;&#x74;&#111;&#58;&#x31;&#x31;&#49;&#49;&#49;&#x40;&#x71;&#x71;&#46;&#x63;&#x6f;&#109;">&#x31;&#49;&#x31;&#x31;&#49;&#x40;&#x71;&#113;&#x2e;&#99;&#111;&#109;&lt;/a> ' (qq/163 校验成功)</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p>下载地址： <a href="https://github.com/buke/openerp-mail-server-smtp-user">https://github.com/buke/openerp-mail-server-smtp-user</a></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[使用 inotify 监视 python 源码文件自动重新加载进程]]></title>
@@ -212,7 +250,7 @@
 </span><span class='line'>
 </span><span class='line'><span class="o">&lt;</span><span class="n">h1</span><span class="o">&gt;</span><span class="n">AutoReload</span> <span class="n">Process</span> <span class="n">Using</span> <span class="n">inofify</span><span class="o">&lt;/</span><span class="n">h1</span><span class="o">&gt;</span>
 </span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">h1</span><span class="o">&gt;</span><span class="n">wangbuke</span> <span class="o">&lt;</span><span class="n">a</span> <span class="n">href</span><span class="o">=</span><span class="s">&quot;&amp;#109;&amp;#x61;&amp;#x69;&amp;#108;&amp;#116;&amp;#x6f;&amp;#58;&amp;#x77;&amp;#x61;&amp;#110;&amp;#x67;&amp;#98;&amp;#117;&amp;#x6b;&amp;#x65;&amp;#64;&amp;#x67;&amp;#x6d;&amp;#97;&amp;#105;&amp;#x6c;&amp;#46;&amp;#x63;&amp;#111;&amp;#x6d;&quot;</span><span class="o">&gt;&amp;</span><span class="c">#x77;&amp;#97;&amp;#110;&amp;#103;&amp;#x62;&amp;#x75;&amp;#107;&amp;#101;&amp;#64;&amp;#103;&amp;#109;&amp;#97;&amp;#105;&amp;#x6c;&amp;#x2e;&amp;#99;&amp;#111;&amp;#x6d;&lt;/a&gt;&lt;/h1&gt;</span>
+</span><span class='line'><span class="o">&lt;</span><span class="n">h1</span><span class="o">&gt;</span><span class="n">wangbuke</span> <span class="o">&lt;</span><span class="n">a</span> <span class="n">href</span><span class="o">=</span><span class="s">&quot;&amp;#x6d;&amp;#x61;&amp;#x69;&amp;#108;&amp;#x74;&amp;#x6f;&amp;#58;&amp;#119;&amp;#97;&amp;#110;&amp;#103;&amp;#98;&amp;#x75;&amp;#x6b;&amp;#101;&amp;#x40;&amp;#103;&amp;#x6d;&amp;#x61;&amp;#x69;&amp;#108;&amp;#46;&amp;#x63;&amp;#111;&amp;#x6d;&quot;</span><span class="o">&gt;&amp;</span><span class="c">#119;&amp;#x61;&amp;#x6e;&amp;#103;&amp;#x62;&amp;#x75;&amp;#x6b;&amp;#x65;&amp;#64;&amp;#x67;&amp;#109;&amp;#x61;&amp;#x69;&amp;#108;&amp;#x2e;&amp;#99;&amp;#x6f;&amp;#109;&lt;/a&gt;&lt;/h1&gt;</span>
 </span><span class='line'>
 </span><span class='line'><span class="o">&lt;</span><span class="n">h1</span><span class="o">&gt;</span><span class="n">taken</span> <span class="kn">from</span> <span class="nn">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">stevekrenzel</span><span class="o">/</span><span class="n">autoreload</span><span class="o">&lt;/</span><span class="n">h1</span><span class="o">&gt;</span>
 </span><span class='line'>
@@ -469,7 +507,7 @@ e.g: $ ./autoreload '.' '.py,.xml,.conf' './openerp-server -c openerp-server.con
 </span><span class='line'>
 </span><span class='line'><span class="o">&lt;</span><span class="n">h1</span><span class="o">&gt;</span><span class="n">AutoReload</span> <span class="n">Process</span><span class="o">&lt;/</span><span class="n">h1</span><span class="o">&gt;</span>
 </span><span class='line'>
-</span><span class='line'><span class="o">&lt;</span><span class="n">h1</span><span class="o">&gt;</span><span class="n">wangbuke</span> <span class="o">&lt;</span><span class="n">a</span> <span class="n">href</span><span class="o">=</span><span class="s">&quot;&amp;#109;&amp;#x61;&amp;#105;&amp;#108;&amp;#116;&amp;#x6f;&amp;#58;&amp;#119;&amp;#97;&amp;#x6e;&amp;#x67;&amp;#x62;&amp;#117;&amp;#107;&amp;#x65;&amp;#64;&amp;#x67;&amp;#109;&amp;#97;&amp;#x69;&amp;#108;&amp;#46;&amp;#99;&amp;#111;&amp;#109;&quot;</span><span class="o">&gt;&amp;</span><span class="c">#119;&amp;#x61;&amp;#x6e;&amp;#x67;&amp;#x62;&amp;#x75;&amp;#x6b;&amp;#101;&amp;#x40;&amp;#103;&amp;#109;&amp;#x61;&amp;#105;&amp;#x6c;&amp;#x2e;&amp;#x63;&amp;#111;&amp;#109;&lt;/a&gt;&lt;/h1&gt;</span>
+</span><span class='line'><span class="o">&lt;</span><span class="n">h1</span><span class="o">&gt;</span><span class="n">wangbuke</span> <span class="o">&lt;</span><span class="n">a</span> <span class="n">href</span><span class="o">=</span><span class="s">&quot;&amp;#x6d;&amp;#97;&amp;#105;&amp;#x6c;&amp;#x74;&amp;#x6f;&amp;#58;&amp;#119;&amp;#x61;&amp;#x6e;&amp;#x67;&amp;#98;&amp;#117;&amp;#x6b;&amp;#x65;&amp;#x40;&amp;#x67;&amp;#109;&amp;#97;&amp;#105;&amp;#x6c;&amp;#46;&amp;#x63;&amp;#x6f;&amp;#x6d;&quot;</span><span class="o">&gt;&amp;</span><span class="c">#x77;&amp;#97;&amp;#x6e;&amp;#x67;&amp;#x62;&amp;#x75;&amp;#107;&amp;#x65;&amp;#x40;&amp;#x67;&amp;#109;&amp;#97;&amp;#105;&amp;#x6c;&amp;#46;&amp;#x63;&amp;#111;&amp;#109;&lt;/a&gt;&lt;/h1&gt;</span>
 </span><span class='line'>
 </span><span class='line'><span class="o">&lt;</span><span class="n">h1</span><span class="o">&gt;</span><span class="n">taken</span> <span class="kn">from</span> <span class="nn">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">stevekrenzel</span><span class="o">/</span><span class="n">autoreload</span><span class="o">&lt;/</span><span class="n">h1</span><span class="o">&gt;</span>
 </span><span class='line'>
@@ -812,50 +850,6 @@ e.g: $ ./autoreload '.' '.py,.xml,.conf' './openerp-server -c openerp-server.con
 <p>而视图的话，则如普通的表一样使用。</p>
 
 <p>STEP3: 完成！</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[GreenOpenERP -- 绿色版 OpenERP For Windows]]></title>
-    <link href="http://buke.github.io/blog/2013/03/10/greenopenerp-portable-openerp-for-windows/"/>
-    <updated>2013-03-10T21:43:00+08:00</updated>
-    <id>http://buke.github.io/blog/2013/03/10/greenopenerp-portable-openerp-for-windows</id>
-    <content type="html"><![CDATA[<p>OpenERP 绿色版 For Windows，源码运行，解压即用，集成 python/postgresql/openerp。</p>
-
-<h2>软件版本</h2>
-
-<ul>
-<li>OpenERP (OpenERP 版本不定时更新, 看博主心情 :P )</li>
-<li>Python=2.7.3</li>
-<li>Postgresql=9.2.3</li>
-</ul>
-
-
-<h2>用法</h2>
-
-<p>下载解压ZIP文件，然后运行 *.bat 批处理文件即可。（注意文件路径：不能含有中文等非西文字符）</p>
-
-<h2>执行脚本</h2>
-
-<ul>
-<li>start.bat -- 运行 Postgresql 和 Openerp</li>
-<li>start-hide.bat -- 隐藏命令行窗口，运行Postgresql 和 Openerp</li>
-<li>stop.bat -- 停止 Postgresql 和 Openerp</li>
-<li>bin/pgAdmin3.exe -- 运行 start.bat 之后，可以运行 pgAdmin 管理PG</li>
-</ul>
-
-
-<h2>下载地址</h2>
-
-<p><a href="http://sourceforge.net/projects/greenopenerp/files/">http://sourceforge.net/projects/greenopenerp/files/</a></p>
-
-<p>作者: wangbuke <a href="&#x6d;&#x61;&#105;&#108;&#116;&#111;&#58;&#x77;&#x61;&#110;&#x67;&#x62;&#x75;&#107;&#x65;&#64;&#x67;&#109;&#x61;&#105;&#x6c;&#x2e;&#99;&#x6f;&#109;">&#x77;&#97;&#x6e;&#103;&#x62;&#117;&#107;&#101;&#64;&#103;&#109;&#97;&#105;&#x6c;&#x2e;&#99;&#x6f;&#x6d;</a></p>
-
-<p>博客: http://buke.github.com/</p>
-
-<h2>UPDATE</h2>
-
-<p>添加 6.1.1 版本下载</p>
 ]]></content>
   </entry>
   

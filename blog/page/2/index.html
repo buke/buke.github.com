@@ -8,7 +8,7 @@
     <meta name="google-site-verification" content="bFYi4ujLMuKmCNqh1lb0azIHJGV9rJwfmq--XRbo_tw" />
 
 	
-	<meta name="description" content="版权声明：自由转载-非商用-非衍生-保持署名 | Creative Commons BY-NC-ND 3.0 作者：步科 本文地址：http://buke.github.io/blog/2012/09/05/openerp-web-import-chardet/ openerp-web- &hellip;">
+	<meta name="description" content="版权声明：自由转载-非商用-非衍生-保持署名 | Creative Commons BY-NC-ND 3.0 作者：步科 本文地址：http://buke.github.io/blog/2013/01/21/openerp-load-balance/ OpenERP 7.0 带来了许多新特性， &hellip;">
 	
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
@@ -91,6 +91,221 @@
 		
 	
 	<div id="content" class="inner">
+
+
+    <article class="post">
+	<h2 class="title">
+		
+		<a href="/blog/2013/01/21/openerp-load-balance/">
+		
+			OpenERP 负载平衡</a>
+	</h2>
+	<div class="entry-content">
+        <div style="color:#aaaaaa;">
+            <ul>
+                <li>版权声明：自由转载-非商用-非衍生-保持署名 | <a href="http://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh">Creative Commons BY-NC-ND 3.0</a> </li>
+                <li>作者：<a href="http://buke.github.io">步科</a></li>
+                <li>本文地址：<a href="http://buke.github.io/blog/2013/01/21/openerp-load-balance/">http://buke.github.io/blog/2013/01/21/openerp-load-balance/</a></li>
+            </ul>
+        </div>
+		<p> OpenERP 7.0 带来了许多新特性，架构上也有许多改进。其中可配置 worker 参数，可使 OpenERP 运行在多进程模式，突破GIL的限制，有效利用了现代多核CPU的性能。但默认情况下，OpenERP 只能运行于一台服务器，对于提供SAAS服务或并发很大的情况下，单台服务器的性能是有限的。本文介绍实现 OpenERP 负载平衡的方法和原理。</p>
+
+<p>一、架构</p>
+
+<pre><code>┌──────────────────────────────────────────────┐
+│                   Nginx                      │
+└──────────────────────────────────────────────┘
+        /              |                \
+┌────────────┐   ┌────────────┐    ┌────────────┐
+│ OE Server  │   │ OE Server  │    │ OE Server  │
+└────────────┘   └────────────┘    └────────────┘
+         \             |                /
+┌───────────────────────────────────────────────┐
+│                Redis Server                   │
+└───────────────────────────────────────────────┘
+</code></pre>
+
+<p>注：实现负载平衡的关键点在于 cache 和 session 共享。</p>
+
+<p>二、Web 服务器配置</p>
+
+<p>WEB 服务器选择 Nginx + upstream 配置，可参考 “使用Nginx Upstream 部署 OpenERP ” http://my.oschina.net/wangbuke/blog/67450 。</p>
+
+<p>默认情况下，nginx 采用轮询的方式，将请求分发到多个 OE Server 里。建议改为 ip_hash 方式，如：</p>
+
+<pre><code>upstream bakend {
+     ip_hash;
+     server 192.168.0.11:8069;
+     server 192.168.0.12:8069;
+}
+</code></pre>
+
+<p>三、OpenERP 的 Session 和 Cache 处理</p>
+
+<p>3.1 OpenERP Web Session 处理</p>
+
+<p>OpenERP 中的Session 处理默认用FilesystemSessionStore，使用文件系统存储用户 session  。如 openerp/addons/web/http.py</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">class</span> <span class="nc">Root</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">session_store</span> <span class="o">=</span> <span class="n">werkzeug</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">sessions</span><span class="o">.</span><span class="n">FilesystemSessionStore</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+</span><span class='line'>        <span class="bp">self</span><span class="o">.</span><span class="n">session_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>那么我们只要将OpenERP 中的SessionStore，改为 RedisSessionStore，RedisSessionStore 可参考https://gist.github.com/1451947 。</p>
+
+<p>修改方法，可以直接修改 http.py 文件。
+或是和我一样，重写一个库，重载 session_context 方法，这样可以不修改OpenERP的源文件，方便以后升级。</p>
+
+<p>3.2 OpenERP LRU Cache 处理</p>
+
+<p>openerp/tools/cache.py 中 ormcache 和 ormcache_multi 是 OpenERP 中非常重要的缓存类。OpenERP ORM 大部分的方法调用都会经过 @tools.ormcache 或 @ormcache_multi 修饰。经过修饰后，结果会被缓存，这个缓存是存放于内存中。 这个就是OE在加载一次数据后，第二次会明显快很多的原因。还有，通过web 界面翻译OE术语不能实时生效，也是因为缓存没有更新。</p>
+
+<p>可以修改ormcache 和 ormcache_multi 类，以使用 redis 缓存。关键代码如下：</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'>    <span class="k">def</span> <span class="nf">lookup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">self2</span><span class="p">,</span> <span class="n">cr</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+</span><span class='line'>        <span class="n">key</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">skiparg</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
+</span><span class='line'>        <span class="n">key</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">:</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+</span><span class='line'>        <span class="c">#key = md5(key).hexdigest()</span>
+</span><span class='line'>        <span class="n">hash_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_key_template</span> <span class="o">%</span> <span class="n">cr</span><span class="o">.</span><span class="n">dbname</span>
+</span><span class='line'>        <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">redis</span><span class="o">.</span><span class="n">hget</span><span class="p">(</span><span class="n">hash_name</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+</span><span class='line'>        <span class="k">if</span> <span class="n">value</span><span class="p">:</span>
+</span><span class='line'>            <span class="bp">self</span><span class="o">.</span><span class="n">stat_hit</span> <span class="o">+=</span> <span class="mi">1</span>
+</span><span class='line'>            <span class="k">return</span> <span class="n">loads</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+</span><span class='line'>        <span class="k">else</span><span class="p">:</span>
+</span><span class='line'>            <span class="bp">self</span><span class="o">.</span><span class="n">stat_miss</span> <span class="o">+=</span> <span class="mi">1</span>
+</span><span class='line'>            <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="p">(</span><span class="n">self2</span><span class="p">,</span> <span class="n">cr</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
+</span><span class='line'>            <span class="bp">self</span><span class="o">.</span><span class="n">redis</span><span class="o">.</span><span class="n">hset</span><span class="p">(</span><span class="n">hash_name</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">dumps</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">HIGHEST_PROTOCOL</span><span class="p">))</span>
+</span><span class='line'>            <span class="bp">self</span><span class="o">.</span><span class="n">redis</span><span class="o">.</span><span class="n">expire</span><span class="p">(</span><span class="n">hash_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span>
+</span><span class='line'>            <span class="k">return</span> <span class="n">value</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>缓存的值使用 cPickle 序列化后，将每个键值对存放于 redis 的 哈希表中。</p>
+
+<p>3.3 auth_openid 模块</p>
+
+<p>auth_openid模块也使用文件系统存储用户登录凭证。如：</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'><span class="k">class</span> <span class="nc">OpenIDController</span><span class="p">(</span><span class="n">openerp</span><span class="o">.</span><span class="n">addons</span><span class="o">.</span><span class="n">web</span><span class="o">.</span><span class="n">http</span><span class="o">.</span><span class="n">Controller</span><span class="p">):</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">_store</span> <span class="o">=</span> <span class="n">filestore</span><span class="o">.</span><span class="n">FileOpenIDStore</span><span class="p">(</span><span class="n">_storedir</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>如果您启用了这个模块，那么这里也需要修改为存储在redis中。如果没有启用此模块，则无需理会。</p>
+
+<p>相关实现可参考，https://github.com/bbangert/openid-redis/blob/master/openidredis/<strong>init</strong>.py</p>
+
+<p>四、OpenERP Cron 处理</p>
+
+<p>默认情况下，每个OpenERP Server 实例都会运行一个 cron 进程任务。这里建议只允许一个实例运行CRON。把OpenERP 7.0 的配置参数 max_cron_threads 设置为0 ，即可禁止cron。相关代码如下：</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'>    <span class="k">def</span> <span class="nf">process_spawn</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span class='line'>        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">workers_http</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">population</span><span class="p">:</span>
+</span><span class='line'>            <span class="bp">self</span><span class="o">.</span><span class="n">worker_spawn</span><span class="p">(</span><span class="n">WorkerHTTP</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">workers_http</span><span class="p">)</span>
+</span><span class='line'>        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">workers_cron</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">config</span><span class="p">[</span><span class="s">&#39;max_cron_threads&#39;</span><span class="p">]:</span>
+</span><span class='line'>            <span class="bp">self</span><span class="o">.</span><span class="n">worker_spawn</span><span class="p">(</span><span class="n">WorkerCron</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">workers_cron</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>五、OpenERP Module RegistryManager 处理</p>
+
+<p>OpenERP Module Registry 主要负责管理OE的对象。一般是安装或更新的模块时候，会根据定义来更新数据库。 在OE多进程模式下，OE会自动管理 Module Registry ，相关的更新信息会存放在数据库里。RegistryManager  会检测是否有更新，如有更新将会自动清除缓存并重新载入。相关代码如下：</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='python'><span class='line'>    <span class="nd">@classmethod</span>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">setup_multi_process_signaling</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">cr</span><span class="p">):</span>
+</span><span class='line'>        <span class="k">if</span> <span class="ow">not</span> <span class="n">openerp</span><span class="o">.</span><span class="n">multi_process</span><span class="p">:</span>
+</span><span class='line'>            <span class="k">return</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="nd">@classmethod</span>
+</span><span class='line'>    <span class="k">def</span> <span class="nf">check_registry_signaling</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">db_name</span><span class="p">):</span>
+</span><span class='line'>        <span class="k">if</span> <span class="n">openerp</span><span class="o">.</span><span class="n">multi_process</span> <span class="ow">and</span> <span class="n">db_name</span> <span class="ow">in</span> <span class="n">cls</span><span class="o">.</span><span class="n">registries</span><span class="p">:</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>这里，实际上无需做改动,上面只是说明情况。只需让OE运行在多进程模式即可（也就是配置 worker 参数）。</p>
+
+<p>六、完成！</p>
+
+<p>经过以上几个步骤，可以让OpenERP 运行于多台服务器，通过Redis 分布式缓存处理相关的 Cache 和 Session，从而实现 OpenERP 负载平衡。</p>
+
+<p>注：
+1、本文仅讨论 OpenERP 负载平衡部署方式，并不涉及 Postgresql 和 Redis 的负载平衡，相应的方法请自行搜索。
+2、鉴于OpenERP SA 官方已不再维护 GTK 客户端，并没有对GTK客户端的情况进行完整测试。</p>
+
+		
+		
+	</div>
+
+
+<div class="meta">
+	<div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-01-21T15:11:00+08:00" pubdate data-updated="true">Jan 21<span>st</span>, 2013</time></div>
+	<div class="tags">
+
+
+	<a class='category' href='/blog/categories/openerp/'>OpenERP</a>
+
+
+</div>
+	
+
+	<span class="comments"><a id="uyan_count_unit" href="/blog/2013/01/21/openerp-load-balance/#uyan_frame">0条评论</a><script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=1743843"></script></span>
+
+</div>
+</article>
 
 
     <article class="post">
@@ -920,7 +1135,7 @@ Supervisor 是一个客户端/服务器系统，允许用户监控和控制类 U
 <a href="http://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh">Creative Commons BY-NC-ND 3.0</a>
 </p>
 
-Copyright &copy; 2013
+Copyright &copy; 2014
 
 
     步科

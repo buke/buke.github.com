@@ -3,12 +3,12 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<title>复制 Virtualbox/vmware linux虚拟机网络无法访问错误的解决方法 - 步科 的博客</title>
+	<title>OpenERP 邮件发送问题修复 -- 解决 qq/163 等邮箱发送失败问题 - 步科 的博客</title>
 	<meta name="author" content="步科">
     <meta name="google-site-verification" content="bFYi4ujLMuKmCNqh1lb0azIHJGV9rJwfmq--XRbo_tw" />
 
 	
-	<meta name="description" content="版权声明：自由转载-非商用-非衍生-保持署名 | Creative Commons BY-NC-ND 3.0 作者：步科 本文地址：http://buke.github.io/blog/2013/06/27/fix-eth0-network-interface-when-cloning- &hellip;">
+	<meta name="description" content="版权声明：自由转载-非商用-非衍生-保持署名 | Creative Commons BY-NC-ND 3.0 作者：步科 本文地址：http://buke.github.io/blog/2014/04/11/openerp-send-mail-header-fixed/ openerp-mail &hellip;">
 	
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
@@ -91,50 +91,46 @@
 		
 	
 	<div id="content" class="inner"><article class="post">
-	<h2 class="title">复制 Virtualbox/vmware Linux虚拟机网络无法访问错误的解决方法</h2>
+	<h2 class="title">OpenERP 邮件发送问题修复 -- 解决 Qq/163 等邮箱发送失败问题</h2>
     <div class="entry-content">
         <div style="color:#aaaaaa;">
             <ul>
                 <li>版权声明：自由转载-非商用-非衍生-保持署名 | <a href="http://creativecommons.org/licenses/by-nc-nd/3.0/deed.zh">Creative Commons BY-NC-ND 3.0</a> </li>
                 <li>作者：<a href="http://buke.github.io">步科</a></li>
-                <li>本文地址：<a href="http://buke.github.io/blog/2013/06/27/fix-eth0-network-interface-when-cloning-centos-slash-redhat-or-debian-slash-ubuntu-virtual-machines-using-virtualbox-or-vmware/">http://buke.github.io/blog/2013/06/27/fix-eth0-network-interface-when-cloning-centos-slash-redhat-or-debian-slash-ubuntu-virtual-machines-using-virtualbox-or-vmware/</a></li>
+                <li>本文地址：<a href="http://buke.github.io/blog/2014/04/11/openerp-send-mail-header-fixed/">http://buke.github.io/blog/2014/04/11/openerp-send-mail-header-fixed/</a></li>
             </ul>
         </div>
-        <p>使用 VirtualBox/VMWare 复制 centos/redhat 或 debian/ubuntu 虚拟机时，如果你选择了初始化网卡MAC地址，复制之后往往会发现网络无法使用。</p>
+        <p>openerp-mail-server-smtp-user</p>
 
-<p>如执行以下命令则提示错误</p>
+<p>Fixed email from header.修复OpenERP 邮件头From 格式错误。</p>
 
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'># ifup eth0
-</span><span class='line'>Device eth0 does not seem to be present, delaying initialisation</span></code></pre></td></tr></table></div></figure>
-
-
-<p>原因是VirtualBox/VMWare 在复制时改变了网卡的MAC地址，和原虚拟机网卡eth0地址不符。</p>
-
-<p>解决办法：</p>
-
-<p>1、删除网络规则文件</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'># rm -f /etc/udev/rules.d/70-persistent-net.rules</span></code></pre></td></tr></table></div></figure>
-
-
-<p>2、修改 eth0 的配置文件 (debian/ubuntu 跳过)</p>
+<p>默认情况下，OpenERP 打包邮件时, 直接使用 email from 作为邮件头的 From 值。如qq/163等邮箱会严格校验email from 和 发件人帐号是否一致，如不一致则返回发送失败。如以下情况：</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'># vim /etc/sysconfig/network-scripts/ifcfg-eth0
-</span><span class='line'>删除 HWADDR 和 UUID 行即可</span></code></pre></td></tr></table></div></figure>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>OE 默认情况
+</span><span class='line'>发件人为： admin@ex.com
+</span><span class='line'>发送账户为：11111@qq.com
+</span><span class='line'>
+</span><span class='line'>OE 打包邮件内容为 email['From'] == 'admin@ex.com' (qq/163 校验失败)
+</span><span class='line'>
+</span><span class='line'>安装本模块后：
+</span><span class='line'>发件人为： admin@ex.com
+</span><span class='line'>发送账户为：11111@qq.com
+</span><span class='line'>
+</span><span class='line'>OE 打包邮件内容为 email['From'] == 'admin@ex.com &lt;11111@qq.com> ' (qq/163 校验成功)</span></code></pre></td></tr></table></div></figure>
 
 
-<p>3、重启</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'># reboot</span></code></pre></td></tr></table></div></figure>
-
-
-<p>完成！</p>
+<p>下载地址： <a href="https://github.com/buke/openerp-mail-server-smtp-user">https://github.com/buke/openerp-mail-server-smtp-user</a></p>
 
     </div>
 
@@ -152,11 +148,11 @@
   
 
 
-<time datetime="2013-06-27T16:36:00+08:00" pubdate data-updated="true">Jun 27<span>th</span>, 2013</time></div>
+<time datetime="2014-04-11T11:24:00+08:00" pubdate data-updated="true">Apr 11<span>th</span>, 2014</time></div>
 	<div class="tags">
 
 
-	<a class='category' href='/blog/categories/linux/'>Linux</a>, <a class='category' href='/blog/categories/virtualbox/'>VirtualBox</a>
+	<a class='category' href='/blog/categories/openerp/'>OpenERP</a>
 
 
 </div>

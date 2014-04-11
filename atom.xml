@@ -4,7 +4,7 @@
   <title><![CDATA[步科 的博客]]></title>
   <link href="http://buke.github.io/atom.xml" rel="self"/>
   <link href="http://buke.github.io/"/>
-  <updated>2013-07-01T17:57:36+08:00</updated>
+  <updated>2014-04-11T12:33:16+08:00</updated>
   <id>http://buke.github.io/</id>
   <author>
     <name><![CDATA[步科]]></name>
@@ -12,6 +12,45 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[OpenERP 邮件发送问题修复 -- 解决 qq/163 等邮箱发送失败问题]]></title>
+    <link href="http://buke.github.io/blog/2014/04/11/openerp-send-mail-header-fixed/"/>
+    <updated>2014-04-11T11:24:00+08:00</updated>
+    <id>http://buke.github.io/blog/2014/04/11/openerp-send-mail-header-fixed</id>
+    <content type="html"><![CDATA[<p>openerp-mail-server-smtp-user</p>
+
+<p>Fixed email from header.修复OpenERP 邮件头From 格式错误。</p>
+
+<p>默认情况下，OpenERP 打包邮件时, 直接使用 email from 作为邮件头的 From 值。如qq/163等邮箱会严格校验email from 和 发件人帐号是否一致，如不一致则返回发送失败。如以下情况：</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>OE 默认情况
+</span><span class='line'>发件人为： admin@ex.com
+</span><span class='line'>发送账户为：11111@qq.com
+</span><span class='line'>
+</span><span class='line'>OE 打包邮件内容为 email['From'] == 'admin@ex.com' (qq/163 校验失败)
+</span><span class='line'>
+</span><span class='line'>安装本模块后：
+</span><span class='line'>发件人为： admin@ex.com
+</span><span class='line'>发送账户为：11111@qq.com
+</span><span class='line'>
+</span><span class='line'>OE 打包邮件内容为 email['From'] == 'admin@ex.com &lt;11111@qq.com> ' (qq/163 校验成功)</span></code></pre></td></tr></table></div></figure>
+
+
+<p>下载地址： <a href="https://github.com/buke/openerp-mail-server-smtp-user">https://github.com/buke/openerp-mail-server-smtp-user</a></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[使用 inotify 监视 python 源码文件自动重新加载进程]]></title>
@@ -761,7 +800,7 @@ e.g: $ ./autoreload &#8216;.&#8217; &#8216;.py,.xml,.conf&#8217; &#8216;./opener
 
 <p><a href="http://sourceforge.net/projects/greenopenerp/files/">http://sourceforge.net/projects/greenopenerp/files/</a></p>
 
-<p>作者: wangbuke <a href="&#109;&#97;&#105;&#108;&#x74;&#x6f;&#58;&#x77;&#x61;&#x6e;&#x67;&#98;&#117;&#107;&#101;&#x40;&#x67;&#109;&#x61;&#105;&#x6c;&#x2e;&#x63;&#x6f;&#x6d;">&#119;&#x61;&#x6e;&#103;&#x62;&#x75;&#107;&#x65;&#64;&#103;&#x6d;&#x61;&#105;&#108;&#46;&#99;&#111;&#109;</a></p>
+<p>作者: wangbuke <a href="&#109;&#97;&#x69;&#108;&#116;&#x6f;&#x3a;&#x77;&#x61;&#x6e;&#x67;&#98;&#x75;&#107;&#101;&#x40;&#103;&#109;&#97;&#105;&#x6c;&#46;&#x63;&#111;&#x6d;">&#x77;&#97;&#x6e;&#x67;&#98;&#117;&#107;&#101;&#x40;&#103;&#109;&#x61;&#x69;&#x6c;&#46;&#x63;&#111;&#109;</a></p>
 
 <p>博客: http://buke.github.com/</p>
 

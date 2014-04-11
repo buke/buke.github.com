@@ -22,7 +22,21 @@ Openerp Web PDF Report Preview & Print
 
 系统要求：
 
-OpenERP 7.0
+* OpenERP 7.0
+
+
+注：
+
+1.  openerp-7.0-20130222-002152 下测试通过
+2.  之前版本可能会出现以下错误：
+
+TypeError: this.get_action_manager(...) is undefined on Firefox
+
+TypeError: Cannot call method 'get_title' of undefined on Chrome / IE
+
+解决办法有2种
+
+F5 刷新页面重新加载 或者  升级OpenERP 版本
 
 
 {% img /images/my/oe-pdf-7.jpg %}
